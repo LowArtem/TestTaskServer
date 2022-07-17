@@ -34,3 +34,15 @@ open class DailyHabit(
     open val id: Int? = null
 )
 
+data class DailyHabitDto(
+    val name: String,
+    val category: String,
+    val deadline: LocalTime,
+    val status: Boolean = false,
+    val description: String? = null,
+    val difficulty: Int = Difficulty.NORMAL.ordinal,
+    val id: Int? = null
+)
+
+fun DailyHabit.toDto(): DailyHabitDto = DailyHabitDto(name, category, deadline, status, description, difficulty, id)
+

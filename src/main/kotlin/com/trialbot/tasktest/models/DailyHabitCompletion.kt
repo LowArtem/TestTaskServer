@@ -20,3 +20,11 @@ open class DailyHabitCompletion(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     open val id: Int? = null
 )
+
+data class DailyHabitCompletionDto(
+    val date: LocalDateTime,
+    val rating: Int = 5,
+    val id: Int? = null
+)
+
+fun DailyHabitCompletion.toDto(): DailyHabitCompletionDto = DailyHabitCompletionDto(date, rating, id)

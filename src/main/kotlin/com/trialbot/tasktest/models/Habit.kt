@@ -31,3 +31,14 @@ open class Habit(
     open val id: Int? = null
 )
 
+data class HabitDto(
+    val name: String,
+    val category: String,
+    val type: Int = Type.POSITIVE.ordinal,
+    val description: String? = null,
+    val difficulty: Int = Difficulty.NORMAL.ordinal,
+    val id: Int? = null
+)
+
+fun Habit.toDto(): HabitDto = HabitDto(name, category, type, description, difficulty, id)
+

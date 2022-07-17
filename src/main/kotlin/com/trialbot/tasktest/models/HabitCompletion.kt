@@ -24,3 +24,12 @@ open class HabitCompletion(
     open val id: Int? = null
 )
 
+data class HabitCompletionDto(
+    val date: LocalDateTime,
+    val rating: Int = 5,
+    val isPositive: Boolean = true,
+    val id: Int? = null
+)
+
+fun HabitCompletion.toDto(): HabitCompletionDto = HabitCompletionDto(date, rating, isPositive, id)
+

@@ -7,37 +7,55 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "tasks", schema = "public")
-class Task (
+open class Task (
     @Column(nullable = false)
-    val name: String,
+    open val name: String,
 
     @Column(nullable = false)
-    val deadline: LocalDateTime,
+    open val deadline: LocalDateTime,
 
     @Column(nullable = false)
-    val status: Boolean = false,
+    open val status: Boolean = false,
 
     @Column(nullable = false)
-    val difficulty: Int = Difficulty.NORMAL.ordinal,
+    open val difficulty: Int = Difficulty.NORMAL.ordinal,
 
     @Column(nullable = false)
-    val priority: Int = Priority.NORMAL.ordinal,
+    open val priority: Int = Priority.NORMAL.ordinal,
 
     @Column(nullable = true)
-    val description: String? = null,
+    open val description: String? = null,
 
-    @OneToMany(mappedBy = "user")
-    val users: Set<TaskUser>,
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
+    open val users: Set<TaskUser>,
 
     // TODO: реализовать данные таблицы
     @Column(nullable = true, name = "groupeventid")
-    val groupEvent: Int? = null,
+    open val groupEvent: Int? = null,
 
     @Column(nullable = true, name = "usereventid")
-    val userEvent: Int? = null,
+    open val userEvent: Int? = null,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    open val id: Int? = null
+)
+
+data class TaskDto(
+    val name: String,
+
+    val deadline: LocalDateTime,
+
+    val status: Boolean = false,
+
+    val difficulty: Int = Difficulty.NORMAL.ordinal,
+
+    val priority: Int = Priority.NORMAL.ordinal,
+
+    val description: String? = null,
+
     val id: Int? = null
 )
+
+fun Task.toDto(): TaskDto = TaskDto(name, deadline, status, difficulty, priority, description, id)
 

@@ -6,21 +6,21 @@ import javax.persistence.*
 @Table(name = "groups", schema = "public")
 open class Group (
     @Column(nullable = false, unique = true)
-    val name: String,
+    open val name: String,
 
     @Column(nullable = true)
-    val description: String? = null,
+    open val description: String? = null,
+
+    @Column(nullable = false, name = "entrancefee")
+    open val entranceFee: Int = 0,
 
     @Column(nullable = false)
-    val entranceFee: Int = 0,
+    open val bank: Long = 0,
 
     @Column(nullable = false)
-    val bank: Long = 0,
-
-    @Column(nullable = false)
-    val experience: Long = 0,
+    open val experience: Long = 0,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int? = null
+    open val id: Int? = null
 )

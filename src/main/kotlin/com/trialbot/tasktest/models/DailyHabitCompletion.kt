@@ -5,18 +5,18 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "daily_completions", schema = "public")
-class DailyHabitCompletion(
+open class DailyHabitCompletion(
     @Column(nullable = false)
-    val date: LocalDateTime,
+    open val date: LocalDateTime,
 
     @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "dailyid", nullable = false)
-    val dailyHabit: DailyHabit,
+    open val dailyHabit: DailyHabit,
 
     @Column(nullable = false)
-    val rating: Int = 5,
+    open val rating: Int = 5,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int? = null
+    open val id: Int? = null
 )

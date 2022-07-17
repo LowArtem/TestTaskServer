@@ -4,28 +4,42 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "users", schema = "public")
-class User(
+open class User(
     @Column(nullable = false, unique = true)
-    val username: String,
+    open val username: String,
 
     @Column(nullable = false)
-    val password: String,
+    open val password: String,
 
     @Column(nullable = false)
-    val experience: Long = 0,
+    open val experience: Long = 0,
 
     @Column(nullable = false)
-    val money: Long = 0,
+    open val money: Long = 0,
 
     @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST], fetch = FetchType.LAZY)
     @JoinColumn(name = "groupid", nullable = true)
-    val group: Group? = null,
+    open val group: Group? = null,
 
-    @OneToMany(mappedBy = "task")
-    val tasks: Set<TaskUser>,
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    open val tasks: Set<TaskUser>,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    open val id: Int? = null
+)
+
+data class UserDto(
+    val username: String,
+
+    val password: String,
+
+    val experience: Long = 0,
+
+    val money: Long = 0,
+
     val id: Int? = null
 )
+
+fun User.toDto(): UserDto = UserDto(username, password, experience, money, id)
 

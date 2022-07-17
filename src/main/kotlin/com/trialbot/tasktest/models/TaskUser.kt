@@ -2,41 +2,51 @@ package com.trialbot.tasktest.models
 
 import java.io.Serializable
 import java.time.LocalDateTime
-import javax.persistence.Column
-import javax.persistence.Embeddable
-import javax.persistence.EmbeddedId
-import javax.persistence.Entity
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-import javax.persistence.MapsId
-import javax.persistence.Table
+import javax.persistence.*
 
 @Embeddable
-class TaskUserKey(
+open class TaskUserKey(
     @Column(name = "taskid")
-    val taskId: Int,
+    open val taskId: Int,
 
     @Column(name = "userid")
-    val userId: Int
-) : Serializable
+    open val userId: Int
+) : Serializable {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TaskUserKey
+
+        if (taskId != other.taskId) return false
+        if (userId != other.userId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = taskId
+        result = 31 * result + userId
+        return result
+    }
+}
 
 @Entity
 @Table(name = "task_to_user", schema = "public")
-class TaskUser(
-
+open class TaskUser(
     @ManyToOne
     @MapsId("taskId")
     @JoinColumn(name = "taskid")
-    val task: Task,
+    open val task: Task,
 
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "userid")
-    val user: User,
+    open val user: User,
 
     @Column(nullable = false)
-    val date: LocalDateTime,
+    open val date: LocalDateTime,
 
     @EmbeddedId
-    val id: TaskUserKey
+    open val id: TaskUserKey
 )

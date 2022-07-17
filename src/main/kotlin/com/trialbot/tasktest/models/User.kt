@@ -21,6 +21,9 @@ class User(
     @JoinColumn(name = "groupid", nullable = true)
     val group: Group? = null,
 
+    @OneToMany(mappedBy = "task")
+    val tasks: Set<TaskUser>,
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int? = null

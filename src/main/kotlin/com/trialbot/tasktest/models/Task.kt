@@ -26,6 +26,9 @@ class Task (
     @Column(nullable = true)
     val description: String? = null,
 
+    @OneToMany(mappedBy = "user")
+    val users: Set<TaskUser>,
+
     // TODO: реализовать данные таблицы
     @Column(nullable = true, name = "groupeventid")
     val groupEvent: Int? = null,

@@ -1,6 +1,6 @@
 package com.trialbot.tasktest.services
 
-import com.trialbot.tasktest.models.User
+import com.trialbot.tasktest.models.UserDto
 import com.trialbot.tasktest.repositories.UserRepository
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -19,7 +19,7 @@ internal class UserServiceTest(
         val username = "TrialBot"
         val password = "TrialBot"
 
-        val userLogged: User? = userService.login(username, password)
+        val userLogged: UserDto? = userService.login(username, password)
         assertNotNull(userLogged)
         assertEquals(username, userLogged?.username)
         assertEquals(password, userLogged?.password)
@@ -31,7 +31,7 @@ internal class UserServiceTest(
         val username = "Bullshit"
         val password = "asdgasdgashfg"
 
-        val userLogged: User? = userService.login(username, password)
+        val userLogged: UserDto? = userService.login(username, password)
         assertNull(userLogged)
     }
 
@@ -43,7 +43,7 @@ internal class UserServiceTest(
         val userRegistered = userService.register(username, password)
         assertNotNull(userRegistered)
 
-        userRepo.delete(userRegistered!!)
+        userRepo.deleteById(userRegistered?.id!!)
     }
 
     @Test
@@ -66,5 +66,17 @@ internal class UserServiceTest(
     fun `getById id does not exist`() {
         val user = userService.getById(60002)
         assertNull(user)
+    }
+
+    @Test
+    fun `checkUserIfNotExists user exists`() {
+        val result = userRepo.checkIfUserExists(7)
+        assertTrue(result)
+    }
+
+    @Test
+    fun `checkUserIfNotExists user does not exist`() {
+        val result = userRepo.checkIfUserExists(765457)
+        assertFalse(result)
     }
 }

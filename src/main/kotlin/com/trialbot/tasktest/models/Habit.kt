@@ -8,23 +8,23 @@ import javax.persistence.*
 @Table(name = "habits", schema = "public")
 open class Habit(
     @Column(nullable = false)
-    open val name: String,
+    open var name: String,
 
     @Column(nullable = false)
-    open val category: String,
+    open var category: String,
 
     @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST], fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", nullable = false)
     open val user: User,
 
     @Column(nullable = false)
-    open val type: Int = Type.POSITIVE.ordinal,
+    open var type: Int = Type.POSITIVE.ordinal,
 
     @Column(nullable = true)
-    open val description: String? = null,
+    open var description: String? = null,
 
     @Column(nullable = false)
-    open val difficulty: Int = Difficulty.NORMAL.ordinal,
+    open var difficulty: Int = Difficulty.NORMAL.ordinal,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

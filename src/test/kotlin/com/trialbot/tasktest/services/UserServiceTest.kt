@@ -42,6 +42,8 @@ internal class UserServiceTest(
 
         val userRegistered = userService.register(username, password)
         assertNotNull(userRegistered)
+
+        userRepo.delete(userRegistered!!)
     }
 
     @Test

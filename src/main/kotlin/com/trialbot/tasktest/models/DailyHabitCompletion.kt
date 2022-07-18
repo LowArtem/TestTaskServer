@@ -9,7 +9,7 @@ open class DailyHabitCompletion(
     @Column(nullable = false)
     open val date: LocalDateTime,
 
-    @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
+    @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "dailyid", nullable = false)
     open val dailyHabit: DailyHabit,
 

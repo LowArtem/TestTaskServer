@@ -59,6 +59,7 @@ class HabitService(
 
     fun deleteHabit(userId: Int, habitId: Int) {
         if (!userRepo.checkIfUserExists(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+        if (habitRepo.findByIdOrNull(habitId) == null) throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
         habitRepo.deleteById(habitId)
     }
 
@@ -74,11 +75,15 @@ class HabitService(
 
     fun deleteHabitCompletion(userId: Int, habitCompletionId: Int) {
         if (!userRepo.checkIfUserExists(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+        if (habitCompletionRepo.findByIdOrNull(habitCompletionId) == null)
+            throw EntityNotFoundException(HABIT_COMPLETION_NOT_FOUND_ERROR_MESSAGE)
+
         habitCompletionRepo.deleteById(habitCompletionId)
     }
 
     companion object {
         private const val USER_NOT_FOUND_ERROR_MESSAGE = "User with this id doesn't exist"
         private const val HABIT_NOT_FOUND_ERROR_MESSAGE = "Habit with this id doesn't exist"
+        private const val HABIT_COMPLETION_NOT_FOUND_ERROR_MESSAGE = "Habit completion with this id doesn't exist"
     }
 }

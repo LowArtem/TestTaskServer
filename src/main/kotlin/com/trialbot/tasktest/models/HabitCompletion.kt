@@ -9,14 +9,14 @@ open class HabitCompletion(
     @Column(nullable = false)
     open val date: LocalDateTime,
 
-    @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
+    @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "habitid", nullable = false)
     open val habit: Habit,
 
     @Column(nullable = false)
     open val rating: Int = 5,
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "ispositive")
     open val isPositive: Boolean = true,
 
     @Id

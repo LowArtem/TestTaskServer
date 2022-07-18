@@ -17,7 +17,7 @@ open class User(
     @Column(nullable = false)
     open val money: Long = 0,
 
-    @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST], fetch = FetchType.LAZY)
+    @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "groupid", nullable = true)
     open val group: Group? = null,
 

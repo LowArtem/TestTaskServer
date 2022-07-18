@@ -13,7 +13,7 @@ open class DailyHabit(
     @Column(nullable = false)
     open val category: String,
 
-    @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST], fetch = FetchType.LAZY)
+    @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", nullable = false)
     open val user: User,
 

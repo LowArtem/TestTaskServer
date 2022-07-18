@@ -13,7 +13,7 @@ open class Habit(
     @Column(nullable = false)
     open var category: String,
 
-    @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST], fetch = FetchType.LAZY)
+    @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", nullable = false)
     open val user: User,
 
@@ -28,15 +28,19 @@ open class Habit(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    open val id: Int? = null
-)
+    open val id: Int? = null,
+) {
+
+    @OneToMany(mappedBy = "habit", cascade = [CascadeType.DETACH, CascadeType.MERGE, CascadeType.REMOVE], orphanRemoval = true)
+    private val completions: List<HabitCompletion> = listOf()
+}
 
 data class HabitDto(
-    val name: String,
-    val category: String,
-    val type: Int = Type.POSITIVE.ordinal,
-    val description: String? = null,
-    val difficulty: Int = Difficulty.NORMAL.ordinal,
+    var name: String,
+    var category: String,
+    var type: Int = Type.POSITIVE.ordinal,
+    var description: String? = null,
+    var difficulty: Int = Difficulty.NORMAL.ordinal,
     val id: Int? = null
 )
 

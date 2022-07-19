@@ -1,6 +1,7 @@
 package com.trialbot.tasktest.configs.jwt
 
 import com.trialbot.tasktest.services.UserService
+import com.trialbot.tasktest.utils.getToken
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -40,8 +41,6 @@ class AuthTokenFilter(
 
     private fun parseJwt(request: HttpServletRequest): String? {
         val headerAuth = request.getHeader("Authorization")
-        return if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            headerAuth.substring(7, headerAuth.length)
-        } else null
+        return headerAuth.getToken()
     }
 }

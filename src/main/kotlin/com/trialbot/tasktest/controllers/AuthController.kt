@@ -6,6 +6,7 @@ import com.trialbot.tasktest.models.UserRegisterRequest
 import com.trialbot.tasktest.services.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = ["*"], maxAge = 86400)
 class AuthController(
     private val userService: UserService,
     private val authenticationProvider: AuthenticationProvider

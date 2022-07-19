@@ -1,26 +1,69 @@
 package com.trialbot.tasktest.services
 
-import com.trialbot.tasktest.models.User
-import com.trialbot.tasktest.models.UserDto
-import com.trialbot.tasktest.models.toDto
+import com.trialbot.tasktest.configs.jwt.JwtUtils
+import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.repositories.UserRepository
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
-class UserService(@Autowired private val userRepo: UserRepository) {
+class UserService(
+    private val userRepo: UserRepository,
+    private val jwtUtils: JwtUtils,
+) : UserDetailsService {
 
-    fun login(username: String, password: String): UserDto? =
-        userRepo.findByUsernameAndPassword(username, password).firstOrNull()?.toDto()
+    fun login(loginRequest: UserLoginRequest, authenticationProvider: AuthenticationProvider): UserLoginResponse? {
+        val authentication: Authentication = authenticationProvider
+            .authenticate(
+                UsernamePasswordAuthenticationToken(
+                    loginRequest.username,
+                    loginRequest.password
+                )
+            )
+        SecurityContextHolder.getContext().authentication = authentication
+        val jwtToken: String = jwtUtils.generateJwtToken(authentication)
 
-    fun register(username: String, password: String): UserDto? {
-        if (userRepo.findByUsername(username).isNotEmpty())
-            return null
+        userRepo.findByUsernameAndPassword(loginRequest.username, loginRequest.password).firstOrNull().let { founded ->
+            if (founded == null) return null
 
-        val user = User(username = username, password = password, tasks = setOf())
-        return userRepo.save(user).toDto()
+            return UserLoginResponse(
+                username = founded.username,
+                password = founded.password,
+                token = jwtToken,
+                experience = founded.experience,
+                money = founded.money,
+                id = founded.id
+            )
+        }
+    }
+
+    fun register(registerRequest: UserRegisterRequest): Boolean {
+        if (userRepo.existsUserByUsername(registerRequest.username))
+            return false
+
+        val user = User(username = registerRequest.username, password = registerRequest.password, tasks = setOf())
+        try {
+            userRepo.save(user).toDto()
+        } catch (_: Exception) {
+            return false
+        }
+        return true
     }
 
     fun getById(id: Int): UserDto? = userRepo.findByIdOrNull(id)?.toDto()
+
+    override fun loadUserByUsername(username: String?): UserDetails {
+        if (username == null) throw UsernameNotFoundException("Username is null")
+        val user = userRepo.findByUsername(username).firstOrNull()
+            ?: throw UsernameNotFoundException("Username -> $username not found")
+
+        return UserSecurityDetails(user.toDto())
+    }
 }

@@ -4,6 +4,7 @@ import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.repositories.HabitCompletionRepository
 import com.trialbot.tasktest.repositories.HabitRepository
 import com.trialbot.tasktest.repositories.UserRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -13,8 +14,6 @@ import org.springframework.data.repository.findByIdOrNull
 import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
-import org.hamcrest.Matchers.*
-import org.hamcrest.MatcherAssert.assertThat
 
 
 @SpringBootTest
@@ -140,7 +139,7 @@ internal class HabitServiceTest(
         assertNotNull(habitAdded)
         habitAdded?.let { habit ->
             assertNotNull(habit.id)
-            assertThat(habit.id!!, greaterThan(0))
+            assertThat(habit.id!!).isGreaterThan(0)
             assertEquals(newHabit.name, habit.name)
             assertEquals(newHabit.description, habit.description)
             assertEquals(newHabit.category, habit.category)
@@ -256,7 +255,7 @@ internal class HabitServiceTest(
         completion?.let {
             assertEquals(timeNow, it.date)
             assertNotNull(it.id)
-            assertThat(it.id!!, greaterThan(0))
+            assertThat(it.id!!).isGreaterThan(0)
         }
     }
 
@@ -286,7 +285,7 @@ internal class HabitServiceTest(
     @Test
     fun `deleteHabitCompletion successful`() {
         val userId = 7
-        assertThat(newCompletionId, greaterThan(0))
+        assertThat(newCompletionId).isGreaterThan(0)
         assertDoesNotThrow {
             habitService.deleteHabitCompletion(userId, newCompletionId)
         }

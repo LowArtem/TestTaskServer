@@ -31,13 +31,28 @@ open class User(
 
 data class UserDto(
     val username: String,
-
     val password: String,
-
     val experience: Long = 0,
-
     val money: Long = 0,
+    val id: Int? = null
+)
 
+data class UserLoginRequest(
+    val username: String,
+    val password: String
+)
+
+data class UserRegisterRequest(
+    val username: String,
+    val password: String
+)
+
+data class UserLoginResponse(
+    val username: String,
+    val password: String,
+    val token: String,
+    val experience: Long = 0,
+    val money: Long = 0,
     val id: Int? = null
 )
 

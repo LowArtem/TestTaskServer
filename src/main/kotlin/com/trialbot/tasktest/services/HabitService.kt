@@ -18,7 +18,7 @@ class HabitService(
 ) {
 
     fun getHabitsByUser(userId: Int): List<HabitDto> {
-        if (!userRepo.checkIfUserExists(userId))
+        if (!userRepo.existsUserById(userId))
             throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
         val habits = habitRepo.findAllByUser_Id(userId)
@@ -42,7 +42,7 @@ class HabitService(
     }
 
     fun updateHabit(userId: Int, habit: HabitDto): HabitDto {
-        if (!userRepo.checkIfUserExists(userId))
+        if (!userRepo.existsUserById(userId))
             throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
         val habitDb = habitRepo.findByIdOrNull(habit.id ?: -1)
@@ -58,7 +58,7 @@ class HabitService(
     }
 
     fun deleteHabit(userId: Int, habitId: Int) {
-        if (!userRepo.checkIfUserExists(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+        if (!userRepo.existsUserById(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
         if (habitRepo.findByIdOrNull(habitId) == null) throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
         habitRepo.deleteById(habitId)
     }
@@ -66,7 +66,7 @@ class HabitService(
     fun addHabitCompletion(
         userId: Int, habitId: Int, date: LocalDateTime, rating: Int = 5, isPositive: Boolean = true
     ): HabitCompletionDto {
-        if (!userRepo.checkIfUserExists(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+        if (!userRepo.existsUserById(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
         val habit = habitRepo.findByIdOrNull(habitId) ?: throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
 
         val habitCompletion = HabitCompletion(date, habit, rating, isPositive)
@@ -74,7 +74,7 @@ class HabitService(
     }
 
     fun deleteHabitCompletion(userId: Int, habitCompletionId: Int) {
-        if (!userRepo.checkIfUserExists(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+        if (!userRepo.existsUserById(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
         if (habitCompletionRepo.findByIdOrNull(habitCompletionId) == null)
             throw EntityNotFoundException(HABIT_COMPLETION_NOT_FOUND_ERROR_MESSAGE)
 

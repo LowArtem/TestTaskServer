@@ -1,28 +1,33 @@
 package com.trialbot.tasktest.services
 
-import com.trialbot.tasktest.models.UserDto
+import com.trialbot.tasktest.models.UserLoginRequest
+import com.trialbot.tasktest.models.UserLoginResponse
+import com.trialbot.tasktest.models.UserRegisterRequest
 import com.trialbot.tasktest.repositories.UserRepository
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.BadCredentialsException
 
 @SpringBootTest
 internal class UserServiceTest(
-    @Autowired private val userRepo: UserRepository
+    @Autowired private val userRepo: UserRepository,
+    @Autowired private val userService: UserService,
+    @Autowired private val authenticationProvider: AuthenticationProvider
 ) {
-
-    private val userService = UserService(userRepo)
 
     @Test
     fun `login successful`() {
         val username = "TrialBot"
         val password = "TrialBot"
 
-        val userLogged: UserDto? = userService.login(username, password)
+        val userLogged: UserLoginResponse? = userService.login(UserLoginRequest(username, password), authenticationProvider)
         assertNotNull(userLogged)
         assertEquals(username, userLogged?.username)
         assertEquals(password, userLogged?.password)
+        assertNotNull(userLogged?.token)
         assertEquals(7, userLogged?.id)
     }
 
@@ -31,7 +36,12 @@ internal class UserServiceTest(
         val username = "Bullshit"
         val password = "asdgasdgashfg"
 
-        val userLogged: UserDto? = userService.login(username, password)
+        var userLogged: UserLoginResponse? = null
+
+        assertThrows(BadCredentialsException::class.java) {
+            userLogged = userService.login(UserLoginRequest(username, password), authenticationProvider)
+        }
+
         assertNull(userLogged)
     }
 
@@ -40,18 +50,23 @@ internal class UserServiceTest(
         val username = "Brand new username"
         val password = "brandnewusername"
 
-        val userRegistered = userService.register(username, password)
-        assertNotNull(userRegistered)
+        val userRegistered: Boolean = userService.register(UserRegisterRequest(username, password))
+        assertTrue(userRegistered)
 
-        userRepo.deleteById(userRegistered?.id!!)
+        userRepo.findByUsernameAndPassword(username, password).firstOrNull().let {
+            assertNotNull(it)
+            assertNotNull(it?.id)
+
+            userRepo.deleteById(it!!.id!!)
+        }
     }
 
     @Test
     fun `register user that already exist`() {
         val username = "TrialBot"
         val password = "TrialBot"
-        val userRegistered = userService.register(username, password)
-        assertNull(userRegistered)
+        val userRegistered: Boolean = userService.register(UserRegisterRequest(username, password))
+        assertFalse(userRegistered)
     }
 
     @Test
@@ -66,17 +81,5 @@ internal class UserServiceTest(
     fun `getById id does not exist`() {
         val user = userService.getById(60002)
         assertNull(user)
-    }
-
-    @Test
-    fun `checkUserIfNotExists user exists`() {
-        val result = userRepo.checkIfUserExists(7)
-        assertTrue(result)
-    }
-
-    @Test
-    fun `checkUserIfNotExists user does not exist`() {
-        val result = userRepo.checkIfUserExists(765457)
-        assertFalse(result)
     }
 }

@@ -3,7 +3,7 @@ package com.trialbot.tasktest.models
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
-class UserSecurityDetails(private val user: UserDto) : UserDetails {
+class UserSecurityDetails(val user: UserDto) : UserDetails {
 
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> =
         mutableListOf(GrantedAuthority { "user" })

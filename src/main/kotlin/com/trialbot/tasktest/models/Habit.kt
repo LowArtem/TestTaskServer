@@ -35,7 +35,15 @@ open class Habit(
     private val completions: List<HabitCompletion> = listOf()
 }
 
-data class HabitDto(
+data class HabitReceiveDto(
+    var name: String,
+    var category: String,
+    var type: Int = Type.POSITIVE.ordinal,
+    var description: String? = null,
+    var difficulty: Int = Difficulty.NORMAL.ordinal,
+)
+
+data class HabitResponseDto(
     var name: String,
     var category: String,
     var type: Int = Type.POSITIVE.ordinal,
@@ -44,5 +52,5 @@ data class HabitDto(
     val id: Int? = null
 )
 
-fun Habit.toDto(): HabitDto = HabitDto(name, category, type, description, difficulty, id)
+fun Habit.toResponseDto(): HabitResponseDto = HabitResponseDto(name, category, type, description, difficulty, id)
 

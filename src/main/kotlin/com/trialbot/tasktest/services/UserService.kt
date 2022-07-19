@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service
 @Service
 class UserService(
     private val userRepo: UserRepository,
-    private val jwtUtils: JwtUtils,
 ) : UserDetailsService {
 
     fun login(loginRequest: UserLoginRequest, authenticationProvider: AuthenticationProvider): UserLoginResponse? {
@@ -28,7 +27,7 @@ class UserService(
                 )
             )
         SecurityContextHolder.getContext().authentication = authentication
-        val jwtToken: String = jwtUtils.generateJwtToken(authentication)
+        val jwtToken: String = JwtUtils.generateJwtToken(authentication)
 
         userRepo.findByUsernameAndPassword(loginRequest.username, loginRequest.password).firstOrNull().let { founded ->
             if (founded == null) return null

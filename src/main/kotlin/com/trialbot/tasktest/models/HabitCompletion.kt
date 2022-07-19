@@ -26,9 +26,16 @@ open class HabitCompletion(
 
 data class HabitCompletionDto(
     val date: LocalDateTime,
-    val rating: Int = 5,
+    val rating: Int,
     val isPositive: Boolean = true,
     val id: Int? = null
+)
+
+data class HabitCompletionReceiveDto(
+    val habitId: Int,
+    val date: LocalDateTime,
+    val rating: Int,
+    val isPositive: Boolean = true
 )
 
 fun HabitCompletion.toDto(): HabitCompletionDto = HabitCompletionDto(date, rating, isPositive, id)

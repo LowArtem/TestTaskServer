@@ -56,6 +56,6 @@ class SecurityConfig(
 
     @Bean
     fun authenticationJwtTokenFilter(): AuthTokenFilter? {
-        return AuthTokenFilter(jwtUtils, userService)
+        return AuthTokenFilter(userService)
     }
 }

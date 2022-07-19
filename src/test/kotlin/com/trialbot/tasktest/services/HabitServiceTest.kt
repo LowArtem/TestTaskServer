@@ -4,6 +4,7 @@ import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.repositories.HabitCompletionRepository
 import com.trialbot.tasktest.repositories.HabitRepository
 import com.trialbot.tasktest.repositories.UserRepository
+import io.jsonwebtoken.MalformedJwtException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -29,6 +30,10 @@ internal class HabitServiceTest(
 
     private lateinit var user: User
     private lateinit var newHabit: Habit
+
+    private val authToken = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjcsImlhdCI6MTY1ODI2NTM0NSwiZXhwIjoxNjYwODk1MTQ1fQ.reeYtxMpJ-sytAy9vVI8Q5ISqlYgeP0pk44tRn-fxZMZDF4jSFxmZBGnLlktMdkjPckngbjpGDWIGacogSS0WQ"
+    private val authTokenFake = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjcsImlhdCI6MTvbODI2NTrtNSwiZXhwIjoxNjYwODk1MTQ1fQ.reeYtxMpJ-sytll9vVI8Q5ISqlYgeP66k44tRn-fxZMZDF4jSFxm89GnLlktMdkjPckngbjpGDWIGacogSS0WQ"
+
 
     init {
         val userId = 7
@@ -82,11 +87,10 @@ internal class HabitServiceTest(
 
     @Test
     fun `getHabitsByUser successful`() {
-        val userId = 7
-        var habits: List<HabitDto> = listOf()
+        var habits: List<HabitResponseDto> = listOf()
 
         assertDoesNotThrow {
-            habits = habitService.getHabitsByUser(userId)
+            habits = habitService.getHabitsByUser(authToken)
         }
         assertEquals(23, habits.size)
 
@@ -108,11 +112,11 @@ internal class HabitServiceTest(
 
     @Test
     fun `getHabitsByUser habits empty`() {
-        val userId = 2
-        var habits: List<HabitDto> = listOf()
+        val user_has_empty_habits_token = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjIsImlhdCI6MTY1ODI2NTk3MSwiZXhwIjoxNjYwODk1NzcxfQ.iPHwOZJFGCIZnb5oWDyzuIdne4c7UjzpIY-NZ-udRK4gWe67ciJ710UQOuzgRlx4MFsJy3e526fmeEvkj01CJg"
+        var habits: List<HabitResponseDto> = listOf()
 
         assertDoesNotThrow {
-            val habitTest = habitService.getHabitsByUser(userId)
+            val habitTest = habitService.getHabitsByUser(user_has_empty_habits_token)
             habits = habitTest
         }
         assertNotNull(habits)
@@ -120,21 +124,14 @@ internal class HabitServiceTest(
     }
 
     @Test
-    fun `getHabitsByUser user doesn't exist`() {
-        val userId = 2567887
-
-        assertThrows(EntityNotFoundException::class.java) {
-            habitService.getHabitsByUser(userId)
-        }
-    }
-
-    @Test
     fun `addHabit successful`() {
-        val userId = 7
-        var habitAdded: HabitDto? = null
+        var habitAdded: HabitResponseDto? = null
 
         assertDoesNotThrow {
-            habitAdded = habitService.addHabit(userId, newHabit.toDto())
+            habitAdded = habitService.addHabit(
+                authToken,
+                HabitReceiveDto(newHabit.name, newHabit.category, newHabit.type, newHabit.description, newHabit.difficulty)
+            )
         }
         assertNotNull(habitAdded)
         habitAdded?.let { habit ->
@@ -149,26 +146,26 @@ internal class HabitServiceTest(
     }
 
     @Test
-    fun `addHabit user doesn't exist`() {
-        val userId = 2567887
-
-        assertThrows(EntityNotFoundException::class.java) {
-            habitService.addHabit(userId, newHabit.toDto())
+    fun `addHabit token error`() {
+        assertThrows(MalformedJwtException::class.java) {
+            habitService.addHabit(
+                authTokenFake,
+                HabitReceiveDto(newHabit.name, newHabit.category, newHabit.type, newHabit.description, newHabit.difficulty)
+            )
         }
     }
 
     @Test
     fun `updateHabit successful`() {
-        val userId = 7
         val habit = habitRepo.findByIdOrNull(newHabitId) ?: throw EntityNotFoundException()
         assertNotNull(habit)
 
-        val newHabitDto = habit.toDto()
+        val newHabitDto = habit.toResponseDto()
         newHabitDto.description = "ja;slkdfaj;sga;jfglfglaa[dpof"
 
-        var habitUpdated: HabitDto? = null
+        var habitUpdated: HabitResponseDto? = null
         assertDoesNotThrow {
-            habitUpdated = habitService.updateHabit(userId, newHabitDto)
+            habitUpdated = habitService.updateHabit(newHabitDto)
         }
         assertNotNull(habitUpdated)
         habitUpdated?.let { updated ->
@@ -180,42 +177,28 @@ internal class HabitServiceTest(
 
     @Test
     fun `updateHabit habit doesn't exist`() {
-        val userId = 7
         val habit = habitRepo.findByIdOrNull(newHabitId) ?: throw EntityNotFoundException()
         assertNotNull(habit)
 
-        val newHabitDto = habit.toDto()
+        val newHabitDto = habit.toResponseDto()
         newHabitDto.description = "ja;slkdfaj;sga;jfglfglaa[dpof"
         val habitDto = newHabitDto.copy(id = 827364)
 
-        var habitUpdated: HabitDto? = null
+        var habitUpdated: HabitResponseDto? = null
         assertThrows(EntityNotFoundException::class.java) {
-            habitUpdated = habitService.updateHabit(userId, habitDto)
+            habitUpdated = habitService.updateHabit(habitDto)
         }
         assertNull(habitUpdated)
     }
 
-    @Test
-    fun `updateHabit user doesn't exist`() {
-        val userId = 2567887
-
-        val habit = habitRepo.findByIdOrNull(newHabitId)
-        assertNotNull(habit)
-
-        assertThrows(EntityNotFoundException::class.java) {
-            habitService.updateHabit(userId, habit!!.toDto())
-        }
-    }
 
     @Test
     fun `deleteHabit successful`() {
-        val userId = 7
-
         var habit = habitRepo.findByIdOrNull(newHabitId)
         assertNotNull(habit)
 
         assertDoesNotThrow {
-            habitService.deleteHabit(userId, newHabitId)
+            habitService.deleteHabit(newHabitId)
         }
 
         habit = habitRepo.findByIdOrNull(newHabitId)
@@ -224,32 +207,19 @@ internal class HabitServiceTest(
 
     @Test
     fun `deleteHabit habit doesn't exist`() {
-        val userId = 7
-
         assertThrows(EntityNotFoundException::class.java) {
-            habitService.deleteHabit(userId, 256547)
-        }
-    }
-
-    @Test
-    fun `deleteHabit user doesn't exist`() {
-        val userId = 2567887
-
-        assertThrows(EntityNotFoundException::class.java) {
-            habitService.deleteHabit(userId, newHabitId)
+            habitService.deleteHabit(256547)
         }
     }
 
     @Test
     fun `addHabitCompletion successful`() {
-        val userId = 7
-
         val timeNow = LocalDateTime.now()
 
         var completion: HabitCompletionDto? = null
 
         assertDoesNotThrow {
-            completion = habitService.addHabitCompletion(userId, newHabitId, timeNow)
+            completion = habitService.addHabitCompletion(HabitCompletionReceiveDto(newHabitId, timeNow, 5))
         }
         assertNotNull(completion)
         completion?.let {
@@ -261,33 +231,21 @@ internal class HabitServiceTest(
 
     @Test
     fun `addHabitCompletion habit doesn't exist`() {
-        val userId = 7
-
         val timeNow = LocalDateTime.now()
 
         var completion: HabitCompletionDto? = null
 
         assertThrows(EntityNotFoundException::class.java) {
-            completion = habitService.addHabitCompletion(userId, 654167, timeNow)
+            completion = habitService.addHabitCompletion(HabitCompletionReceiveDto(654654, timeNow, 5))
         }
         assertNull(completion)
     }
 
     @Test
-    fun `addHabitCompletion user doesn't exist`() {
-        val userId = 2567887
-
-        assertThrows(EntityNotFoundException::class.java) {
-            habitService.addHabitCompletion(userId, newHabitId, LocalDateTime.now())
-        }
-    }
-
-    @Test
     fun `deleteHabitCompletion successful`() {
-        val userId = 7
         assertThat(newCompletionId).isGreaterThan(0)
         assertDoesNotThrow {
-            habitService.deleteHabitCompletion(userId, newCompletionId)
+            habitService.deleteHabitCompletion(newCompletionId)
         }
 
         val completion = habitCompletionRepo.findByIdOrNull(newCompletionId)
@@ -299,19 +257,8 @@ internal class HabitServiceTest(
 
     @Test
     fun `deleteHabitCompletion completion doesn't exist`() {
-        val userId = 7
-
         assertThrows(EntityNotFoundException::class.java) {
-            habitService.deleteHabitCompletion(userId, 355601)
-        }
-    }
-
-    @Test
-    fun `deleteHabitCompletion user doesn't exist`() {
-        val userId = 2567887
-
-        assertThrows(EntityNotFoundException::class.java) {
-            habitService.deleteHabitCompletion(userId, newCompletionId)
+            habitService.deleteHabitCompletion(355601)
         }
     }
 }

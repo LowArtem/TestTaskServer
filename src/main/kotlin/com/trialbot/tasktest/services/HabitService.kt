@@ -4,29 +4,33 @@ import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.repositories.HabitCompletionRepository
 import com.trialbot.tasktest.repositories.HabitRepository
 import com.trialbot.tasktest.repositories.UserRepository
+import com.trialbot.tasktest.utils.getUserFromToken
+import com.trialbot.tasktest.utils.getUserIdFromToken
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 @Service
 class HabitService(
     @Autowired private val habitRepo: HabitRepository,
     @Autowired private val userRepo: UserRepository,
-    @Autowired private val habitCompletionRepo: HabitCompletionRepository
+    @Autowired private val habitCompletionRepo: HabitCompletionRepository,
 ) {
 
-    fun getHabitsByUser(userId: Int): List<HabitDto> {
+    fun getHabitsByUser(token: String): List<HabitResponseDto> {
+        val userId = token.getUserIdFromToken()
+            ?: throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+
         if (!userRepo.existsUserById(userId))
             throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
         val habits = habitRepo.findAllByUser_Id(userId)
-        return habits.map { it.toDto() }
+        return habits.map { it.toResponseDto() }
     }
 
-    fun addHabit(userId: Int, habit: HabitDto): HabitDto {
-        val user: User = userRepo.findByIdOrNull(userId)
+    fun addHabit(token: String, habit: HabitReceiveDto): HabitResponseDto {
+        val user: User = token.getUserFromToken(userRepo)
             ?: throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
         val habitDb = Habit(
@@ -38,13 +42,10 @@ class HabitService(
             difficulty = habit.difficulty
         )
 
-        return habitRepo.save(habitDb).toDto()
+        return habitRepo.save(habitDb).toResponseDto()
     }
 
-    fun updateHabit(userId: Int, habit: HabitDto): HabitDto {
-        if (!userRepo.existsUserById(userId))
-            throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
-
+    fun updateHabit(habit: HabitResponseDto): HabitResponseDto {
         val habitDb = habitRepo.findByIdOrNull(habit.id ?: -1)
             ?: throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
 
@@ -54,28 +55,23 @@ class HabitService(
         habitDb.category = habit.category
         habitDb.difficulty = habit.difficulty
 
-        return habitRepo.save(habitDb).toDto()
+        return habitRepo.save(habitDb).toResponseDto()
     }
 
-    fun deleteHabit(userId: Int, habitId: Int) {
-        if (!userRepo.existsUserById(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+    fun deleteHabit(habitId: Int) {
         if (habitRepo.findByIdOrNull(habitId) == null) throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
         habitRepo.deleteById(habitId)
     }
 
-    fun addHabitCompletion(
-        userId: Int, habitId: Int, date: LocalDateTime, rating: Int = 5, isPositive: Boolean = true
-    ): HabitCompletionDto {
-        if (!userRepo.existsUserById(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
-        val habit = habitRepo.findByIdOrNull(habitId) ?: throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
+    fun addHabitCompletion(requestData: HabitCompletionReceiveDto): HabitCompletionDto {
+        val habit = habitRepo.findByIdOrNull(requestData.habitId) ?: throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
 
-        val habitCompletion = HabitCompletion(date, habit, rating, isPositive)
+        val habitCompletion = HabitCompletion(requestData.date, habit, requestData.rating, requestData.isPositive)
         return habitCompletionRepo.save(habitCompletion).toDto()
     }
 
-    fun deleteHabitCompletion(userId: Int, habitCompletionId: Int) {
-        if (!userRepo.existsUserById(userId)) throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
-        if (habitCompletionRepo.findByIdOrNull(habitCompletionId) == null)
+    fun deleteHabitCompletion(habitCompletionId: Int) {
+        if (!habitCompletionRepo.existsById(habitCompletionId))
             throw EntityNotFoundException(HABIT_COMPLETION_NOT_FOUND_ERROR_MESSAGE)
 
         habitCompletionRepo.deleteById(habitCompletionId)

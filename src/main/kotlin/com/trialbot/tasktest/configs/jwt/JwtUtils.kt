@@ -10,16 +10,18 @@ import java.util.*
 
 
 @Component
-class JwtUtils {
+object JwtUtils {
 
-    private val expirationMs: Long = 2629800000
+    private const val expirationMs: Long = 2629800000
+    private const val jwtSecret: String = """I think you know. I think you know that I'm not one for letting go. It goes to show. Sometimes the ones we love, we tend to hurt the most"""
 
-    private val jwtSecret: String = """I think you know. I think you know that I'm not one for letting go. 
-        |It goes to show. Sometimes the ones we love, we tend to hurt the most""".trimMargin()
 
     fun generateJwtToken(authentication: Authentication): String {
         val userPrincipal: UserSecurityDetails = authentication.principal as UserSecurityDetails
-        return Jwts.builder().setSubject(userPrincipal.username).setIssuedAt(Date())
+        return Jwts.builder()
+            .setSubject(userPrincipal.username)
+            .setClaims(mutableMapOf<String, Any>("userId" to (userPrincipal.user.id ?: -1)))
+            .setIssuedAt(Date())
             .setExpiration(Date(Date().time + expirationMs))
             .signWith(SignatureAlgorithm.HS512, jwtSecret).compact()
     }
@@ -39,4 +41,10 @@ class JwtUtils {
     fun getUserNameFromJwtToken(jwt: String?): String? {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(jwt).body.subject
     }
+
+    fun getUserIdFromJwtToken(jwt: String?): Int? = (Jwts.parser()
+        .setSigningKey(jwtSecret)
+        .parseClaimsJws(jwt)
+        .body["userId"].toString()).toIntOrNull()
+
 }

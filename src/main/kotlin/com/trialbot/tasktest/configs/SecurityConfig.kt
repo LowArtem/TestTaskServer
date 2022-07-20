@@ -3,7 +3,7 @@ package com.trialbot.tasktest.configs
 import com.trialbot.tasktest.configs.jwt.AuthEntryPointJwt
 import com.trialbot.tasktest.configs.jwt.AuthTokenFilter
 import com.trialbot.tasktest.configs.jwt.JwtUtils
-import com.trialbot.tasktest.services.UserService
+import com.trialbot.tasktest.features.auth.UserAuthService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 class SecurityConfig(
-    private val userService: UserService,
+    private val userAuthService: UserAuthService,
     private val entryPointJwt: AuthEntryPointJwt,
     private val jwtUtils: JwtUtils,
 ) {
@@ -49,13 +49,13 @@ class SecurityConfig(
     @Bean
     fun authenticationProvider(): DaoAuthenticationProvider? {
         val authenticationProvider = DaoAuthenticationProvider()
-        authenticationProvider.setUserDetailsService(userService)
+        authenticationProvider.setUserDetailsService(userAuthService)
         authenticationProvider.setPasswordEncoder(passwordEncoder())
         return authenticationProvider
     }
 
     @Bean
     fun authenticationJwtTokenFilter(): AuthTokenFilter? {
-        return AuthTokenFilter(userService)
+        return AuthTokenFilter(userAuthService)
     }
 }

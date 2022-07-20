@@ -1,4 +1,4 @@
-package com.trialbot.tasktest.services
+package com.trialbot.tasktest.features.crud.habit
 
 import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.repositories.HabitCompletionRepository
@@ -64,7 +64,9 @@ class HabitService(
     }
 
     fun addHabitCompletion(requestData: HabitCompletionReceiveDto): HabitCompletionDto {
-        val habit = habitRepo.findByIdOrNull(requestData.habitId) ?: throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
+        val habit = habitRepo.findByIdOrNull(requestData.habitId) ?: throw EntityNotFoundException(
+            HABIT_NOT_FOUND_ERROR_MESSAGE
+        )
 
         val habitCompletion = HabitCompletion(requestData.date, habit, requestData.rating, requestData.isPositive)
         return habitCompletionRepo.save(habitCompletion).toDto()

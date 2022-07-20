@@ -1,4 +1,4 @@
-package com.trialbot.tasktest.controllers
+package com.trialbot.tasktest
 
 import com.trialbot.tasktest.models.User
 import com.trialbot.tasktest.models.UserDto

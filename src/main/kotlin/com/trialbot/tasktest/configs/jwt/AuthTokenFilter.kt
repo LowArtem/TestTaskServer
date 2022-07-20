@@ -1,20 +1,18 @@
 package com.trialbot.tasktest.configs.jwt
 
-import com.trialbot.tasktest.services.UserService
+import com.trialbot.tasktest.features.auth.UserAuthService
 import com.trialbot.tasktest.utils.getToken
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
-import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class AuthTokenFilter(
-    private val userService: UserService
+    private val userAuthService: UserAuthService
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -26,7 +24,7 @@ class AuthTokenFilter(
             val jwt: String? = parseJwt(request)
             if (jwt != null && JwtUtils.validateJwtToken(jwt)) {
                 val username = JwtUtils.getUserNameFromJwtToken(jwt)
-                val userDetails: UserDetails = userService.loadUserByUsername(username)
+                val userDetails: UserDetails = userAuthService.loadUserByUsername(username)
                 val authenticationToken =
                     UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
                 authenticationToken.details = WebAuthenticationDetailsSource().buildDetails(request)

@@ -1,5 +1,6 @@
 package com.trialbot.tasktest.services
 
+import com.trialbot.tasktest.features.crud.habit.HabitService
 import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.repositories.HabitCompletionRepository
 import com.trialbot.tasktest.repositories.HabitRepository

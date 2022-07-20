@@ -1,4 +1,4 @@
-package com.trialbot.tasktest.services
+package com.trialbot.tasktest.features.auth
 
 import com.trialbot.tasktest.configs.jwt.JwtUtils
 import com.trialbot.tasktest.models.*
@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
-class UserService(
+class UserAuthService(
     private val userRepo: UserRepository,
 ) : UserDetailsService {
 

@@ -8,33 +8,41 @@ import javax.persistence.*
 @Table(name = "daily_habits", schema = "public")
 open class DailyHabit(
     @Column(nullable = false)
-    open val name: String,
+    open var name: String,
 
     @Column(nullable = false)
-    open val category: String,
+    open var category: String,
 
     @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", nullable = false)
     open val user: User,
 
     @Column(nullable = false)
-    open val deadline: LocalTime,
+    open var deadline: LocalTime,
 
     @Column(nullable = false)
-    open val status: Boolean = false,
+    open var status: Boolean = false,
 
     @Column(nullable = true)
-    open val description: String? = null,
+    open var description: String? = null,
 
     @Column(nullable = false)
-    open val difficulty: Int = Difficulty.NORMAL.ordinal,
+    open var difficulty: Int = Difficulty.NORMAL.ordinal,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     open val id: Int? = null
 )
 
-data class DailyHabitDto(
+data class DailyHabitReceiveDto(
+    val name: String,
+    val category: String,
+    val deadline: LocalTime,
+    val description: String?,
+    val difficulty: Int = Difficulty.NORMAL.ordinal
+)
+
+data class DailyHabitResponseDto(
     val name: String,
     val category: String,
     val deadline: LocalTime,
@@ -44,5 +52,5 @@ data class DailyHabitDto(
     val id: Int? = null
 )
 
-fun DailyHabit.toDto(): DailyHabitDto = DailyHabitDto(name, category, deadline, status, description, difficulty, id)
+fun DailyHabit.toResponseDto(): DailyHabitResponseDto = DailyHabitResponseDto(name, category, deadline, status, description, difficulty, id)
 

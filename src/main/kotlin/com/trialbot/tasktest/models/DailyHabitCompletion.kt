@@ -27,4 +27,10 @@ data class DailyHabitCompletionDto(
     val id: Int? = null
 )
 
+data class DailyHabitCompletionReceiveDto(
+    val dailyHabitId: Int,
+    val date: LocalDateTime,
+    val rating: Int
+)
+
 fun DailyHabitCompletion.toDto(): DailyHabitCompletionDto = DailyHabitCompletionDto(date, rating, id)

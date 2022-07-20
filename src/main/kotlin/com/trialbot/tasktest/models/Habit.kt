@@ -36,11 +36,11 @@ open class Habit(
 }
 
 data class HabitReceiveDto(
-    var name: String,
-    var category: String,
-    var type: Int = Type.POSITIVE.ordinal,
-    var description: String? = null,
-    var difficulty: Int = Difficulty.NORMAL.ordinal,
+    val name: String,
+    val category: String,
+    val type: Int = Type.POSITIVE.ordinal,
+    val description: String? = null,
+    val difficulty: Int = Difficulty.NORMAL.ordinal,
 )
 
 data class HabitResponseDto(

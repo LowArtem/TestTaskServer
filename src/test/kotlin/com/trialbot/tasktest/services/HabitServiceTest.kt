@@ -17,11 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.TestInstance
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class HabitServiceTest(
     @Autowired private val habitRepo: HabitRepository,
     @Autowired private val habitCompletionRepo: HabitCompletionRepository,
@@ -32,8 +34,8 @@ internal class HabitServiceTest(
     private var newHabitId: Int = -1
     private var newCompletionId: Int = -1
 
-    private lateinit var user: User
-    private lateinit var newHabit: Habit
+    private val user: User
+    private val newHabit: Habit
 
     // около 23:00 19.07 был создан
     private val authToken = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjcsImlhdCI6MTY1ODI2NTM0NSwiZXhwIjoxNjYwODk1MTQ1fQ.reeYtxMpJ-sytAy9vVI8Q5ISqlYgeP0pk44tRn-fxZMZDF4jSFxmZBGnLlktMdkjPckngbjpGDWIGacogSS0WQ"

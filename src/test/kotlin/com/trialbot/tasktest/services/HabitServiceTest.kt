@@ -4,7 +4,11 @@ import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.repositories.HabitCompletionRepository
 import com.trialbot.tasktest.repositories.HabitRepository
 import com.trialbot.tasktest.repositories.UserRepository
+import com.trialbot.tasktest.utils.getUserIdFromToken
 import io.jsonwebtoken.MalformedJwtException
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -31,6 +35,7 @@ internal class HabitServiceTest(
     private lateinit var user: User
     private lateinit var newHabit: Habit
 
+    // около 23:00 19.07 был создан
     private val authToken = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjcsImlhdCI6MTY1ODI2NTM0NSwiZXhwIjoxNjYwODk1MTQ1fQ.reeYtxMpJ-sytAy9vVI8Q5ISqlYgeP0pk44tRn-fxZMZDF4jSFxmZBGnLlktMdkjPckngbjpGDWIGacogSS0WQ"
     private val authTokenFake = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjcsImlhdCI6MTvbODI2NTrtNSwiZXhwIjoxNjYwODk1MTQ1fQ.reeYtxMpJ-sytll9vVI8Q5ISqlYgeP66k44tRn-fxZMZDF4jSFxm89GnLlktMdkjPckngbjpGDWIGacogSS0WQ"
 
@@ -86,7 +91,7 @@ internal class HabitServiceTest(
 
 
     @Test
-    fun `getHabitsByUser successful`() {
+    fun `getHabitsByUser successful by auth token`() {
         var habits: List<HabitResponseDto> = listOf()
 
         assertDoesNotThrow {
@@ -111,25 +116,76 @@ internal class HabitServiceTest(
     }
 
     @Test
-    fun `getHabitsByUser habits empty`() {
-        val user_has_empty_habits_token = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjIsImlhdCI6MTY1ODI2NTk3MSwiZXhwIjoxNjYwODk1NzcxfQ.iPHwOZJFGCIZnb5oWDyzuIdne4c7UjzpIY-NZ-udRK4gWe67ciJ710UQOuzgRlx4MFsJy3e526fmeEvkj01CJg"
+    fun `getHabitsByUser successful (clean test, without token)`() {
         var habits: List<HabitResponseDto> = listOf()
 
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "2"
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns 7
+
         assertDoesNotThrow {
-            val habitTest = habitService.getHabitsByUser(user_has_empty_habits_token)
+            habits = habitService.getHabitsByUser(tokenMock)
+        }
+        assertEquals(23, habits.size)
+
+        val habitIdExpected = 55
+        val habitNameExpected = "Cash Manager"
+        val habitDescriptionExpected = "kSREMCw34bEaZOG"
+        val habitCategoryExpected = "Education"
+        val habitTypeExpected = 2
+
+        val habitTest = habits.find { it.id == habitIdExpected }
+
+        assertNotNull(habitTest)
+        assertEquals(habitIdExpected, habitTest!!.id)
+        assertEquals(habitNameExpected, habitTest.name)
+        assertEquals(habitDescriptionExpected, habitTest.description)
+        assertEquals(habitCategoryExpected, habitTest.category)
+        assertEquals(habitTypeExpected, habitTest.type)
+    }
+
+    @Test
+    fun `getHabitsByUser habits empty`() {
+        var habits: List<HabitResponseDto> = listOf()
+
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "2"
+
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns 2
+
+        assertDoesNotThrow {
+            val habitTest = habitService.getHabitsByUser(tokenMock)
             habits = habitTest
         }
         assertNotNull(habits)
         assertEquals(0, habits.size)
+
+        verify {
+            tokenMock.getUserIdFromToken()
+        }
     }
 
     @Test
     fun `addHabit successful`() {
         var habitAdded: HabitResponseDto? = null
 
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "2"
+
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns 7
+
         assertDoesNotThrow {
             habitAdded = habitService.addHabit(
-                authToken,
+                tokenMock,
                 HabitReceiveDto(newHabit.name, newHabit.category, newHabit.type, newHabit.description, newHabit.difficulty)
             )
         }
@@ -150,6 +206,23 @@ internal class HabitServiceTest(
         assertThrows(MalformedJwtException::class.java) {
             habitService.addHabit(
                 authTokenFake,
+                HabitReceiveDto(newHabit.name, newHabit.category, newHabit.type, newHabit.description, newHabit.difficulty)
+            )
+        }
+    }
+
+    @Test
+    fun `addHabit user not found`() {
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "2"
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns 634576
+
+        assertThrows(EntityNotFoundException::class.java) {
+            habitService.addHabit(
+                tokenMock,
                 HabitReceiveDto(newHabit.name, newHabit.category, newHabit.type, newHabit.description, newHabit.difficulty)
             )
         }

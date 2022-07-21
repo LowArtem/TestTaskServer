@@ -1,6 +1,5 @@
-package com.trialbot.tasktest.services
+package com.trialbot.tasktest.features.crud.habit
 
-import com.trialbot.tasktest.features.crud.habit.HabitService
 import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.repositories.HabitCompletionRepository
 import com.trialbot.tasktest.repositories.HabitRepository
@@ -19,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.TestInstance
+import java.time.Instant
 import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
@@ -71,7 +71,7 @@ internal class HabitServiceTest(
         val savedHabit = habitRepo.save(habitDb)
         newHabitId = savedHabit.id!!
 
-        val completion = HabitCompletion(LocalDateTime.now(), savedHabit)
+        val completion = HabitCompletion(Instant.now(), savedHabit)
         newCompletionId = habitCompletionRepo.save(completion).id!!
     }
 
@@ -290,7 +290,7 @@ internal class HabitServiceTest(
 
     @Test
     fun `addHabitCompletion successful`() {
-        val timeNow = LocalDateTime.now()
+        val timeNow = Instant.now()
 
         var completion: HabitCompletionDto? = null
 
@@ -307,7 +307,7 @@ internal class HabitServiceTest(
 
     @Test
     fun `addHabitCompletion habit doesn't exist`() {
-        val timeNow = LocalDateTime.now()
+        val timeNow = Instant.now()
 
         var completion: HabitCompletionDto? = null
 

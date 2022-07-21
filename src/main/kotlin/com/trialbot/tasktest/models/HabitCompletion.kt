@@ -1,13 +1,13 @@
 package com.trialbot.tasktest.models
 
-import java.time.LocalDateTime
+import java.time.Instant
 import javax.persistence.*
 
 @Entity
 @Table(name = "habit_completions", schema = "public")
 open class HabitCompletion(
     @Column(nullable = false)
-    open val date: LocalDateTime,
+    open val date: Instant,
 
     @ManyToOne(cascade = [CascadeType.DETACH, CascadeType.MERGE], fetch = FetchType.LAZY)
     @JoinColumn(name = "habitid", nullable = false)
@@ -25,7 +25,7 @@ open class HabitCompletion(
 )
 
 data class HabitCompletionDto(
-    val date: LocalDateTime,
+    val date: Instant,
     val rating: Int,
     val isPositive: Boolean = true,
     val id: Int? = null
@@ -33,7 +33,7 @@ data class HabitCompletionDto(
 
 data class HabitCompletionReceiveDto(
     val habitId: Int,
-    val date: LocalDateTime,
+    val date: Instant,
     val rating: Int,
     val isPositive: Boolean = true
 )

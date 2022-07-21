@@ -2,32 +2,32 @@ package com.trialbot.tasktest.models
 
 import com.trialbot.tasktest.models.enums.Difficulty
 import com.trialbot.tasktest.models.enums.Priority
-import java.time.LocalDateTime
+import java.time.Instant
 import javax.persistence.*
 
 @Entity
 @Table(name = "tasks", schema = "public")
 open class Task (
     @Column(nullable = false)
-    open val name: String,
+    open var name: String,
 
     @Column(nullable = false)
-    open val deadline: LocalDateTime,
+    open var deadline: Instant,
 
     @Column(nullable = false)
-    open val status: Boolean = false,
+    open var status: Boolean = false,
 
     @Column(nullable = false)
-    open val difficulty: Int = Difficulty.NORMAL.ordinal,
+    open var difficulty: Int = Difficulty.NORMAL.ordinal,
 
     @Column(nullable = false)
-    open val priority: Int = Priority.NORMAL.ordinal,
+    open var priority: Int = Priority.NORMAL.ordinal,
 
     @Column(nullable = true)
-    open val description: String? = null,
+    open var description: String? = null,
 
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
-    open val users: Set<TaskUser>,
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    open val taskUsers: Set<TaskUser> = setOf(),
 
     // TODO: реализовать данные таблицы
     @Column(nullable = true, name = "groupeventid")
@@ -39,23 +39,53 @@ open class Task (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     open val id: Int? = null
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Task
+
+        if (name != other.name) return false
+        if (deadline != other.deadline) return false
+        if (status != other.status) return false
+        if (difficulty != other.difficulty) return false
+        if (priority != other.priority) return false
+        if (description != other.description) return false
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + deadline.hashCode()
+        result = 31 * result + status.hashCode()
+        result = 31 * result + difficulty
+        result = 31 * result + priority
+        result = 31 * result + (description?.hashCode() ?: 0)
+        result = 31 * result + (id ?: 0)
+        return result
+    }
+}
+
+data class TaskReceiveDto(
+    val name: String,
+    val deadline: Instant,
+    val difficulty: Int,
+    val priority: Int,
+    val description: String? = null
 )
 
-data class TaskDto(
-    val name: String,
-
-    val deadline: LocalDateTime,
-
-    val status: Boolean = false,
-
-    val difficulty: Int = Difficulty.NORMAL.ordinal,
-
-    val priority: Int = Priority.NORMAL.ordinal,
-
-    val description: String? = null,
-
+data class TaskResponseDto(
+    var name: String,
+    var deadline: Instant,
+    var status: Boolean = false,
+    var difficulty: Int,
+    var priority: Int,
+    var description: String?,
     val id: Int? = null
 )
 
-fun Task.toDto(): TaskDto = TaskDto(name, deadline, status, difficulty, priority, description, id)
+fun Task.toResponseDto(): TaskResponseDto = TaskResponseDto(name, deadline, status, difficulty, priority, description, id)
 

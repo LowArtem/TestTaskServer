@@ -21,8 +21,8 @@ open class User(
     @JoinColumn(name = "groupid", nullable = true)
     open val group: Group? = null,
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    open val tasks: Set<TaskUser>,
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    open val taskUsers: Set<TaskUser> = setOf(),
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

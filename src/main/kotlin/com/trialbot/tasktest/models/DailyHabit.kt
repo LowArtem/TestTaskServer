@@ -1,7 +1,7 @@
 package com.trialbot.tasktest.models
 
 import com.trialbot.tasktest.models.enums.Difficulty
-import java.time.LocalTime
+import java.time.Instant
 import javax.persistence.*
 
 @Entity
@@ -18,7 +18,7 @@ open class DailyHabit(
     open val user: User,
 
     @Column(nullable = false)
-    open var deadline: LocalTime,
+    open var deadline: Instant,
 
     @Column(nullable = false)
     open var status: Boolean = false,
@@ -37,7 +37,7 @@ open class DailyHabit(
 data class DailyHabitReceiveDto(
     val name: String,
     val category: String,
-    val deadline: LocalTime,
+    val deadline: Instant,
     val description: String?,
     val difficulty: Int = Difficulty.NORMAL.ordinal
 )
@@ -45,7 +45,7 @@ data class DailyHabitReceiveDto(
 data class DailyHabitResponseDto(
     val name: String,
     val category: String,
-    val deadline: LocalTime,
+    val deadline: Instant,
     val status: Boolean = false,
     val description: String? = null,
     val difficulty: Int = Difficulty.NORMAL.ordinal,

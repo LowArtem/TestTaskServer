@@ -1,16 +1,16 @@
 package com.trialbot.tasktest.models
 
 import java.io.Serializable
-import java.time.LocalDateTime
+import java.time.Instant
 import javax.persistence.*
 
 @Embeddable
 open class TaskUserKey(
     @Column(name = "taskid")
-    open val taskId: Int,
+    open val taskId: Int? = null,
 
     @Column(name = "userid")
-    open val userId: Int
+    open val userId: Int? = null
 ) : Serializable {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -25,8 +25,8 @@ open class TaskUserKey(
     }
 
     override fun hashCode(): Int {
-        var result = taskId
-        result = 31 * result + userId
+        var result = taskId ?: 0
+        result = 31 * result + (userId ?: 0)
         return result
     }
 }
@@ -34,19 +34,39 @@ open class TaskUserKey(
 @Entity
 @Table(name = "task_to_user", schema = "public")
 open class TaskUser(
-    @ManyToOne
-    @MapsId("taskId")
-    @JoinColumn(name = "taskid")
-    open val task: Task,
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("userId")
     @JoinColumn(name = "userid")
     open val user: User,
 
     @Column(nullable = false)
-    open val date: LocalDateTime,
+    open val date: Instant,
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId("taskId")
+    @JoinColumn(name = "taskid")
+    open val task: Task,
 
     @EmbeddedId
-    open val id: TaskUserKey
-)
+    open val id: TaskUserKey = TaskUserKey()
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TaskUser
+
+        if (task != other.task) return false
+        if (user != other.user) return false
+        if (date != other.date) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = task.hashCode()
+        result = 31 * result + user.hashCode()
+        result = 31 * result + date.hashCode()
+        return result
+    }
+}

@@ -47,7 +47,7 @@ class UserAuthService(
         if (userRepo.existsUserByUsername(registerRequest.username))
             return false
 
-        val user = User(username = registerRequest.username, password = registerRequest.password, tasks = setOf())
+        val user = User(username = registerRequest.username, password = registerRequest.password, taskUsers = setOf())
         try {
             userRepo.save(user).toDto()
         } catch (_: Exception) {

@@ -1,6 +1,5 @@
-package com.trialbot.tasktest.services
+package com.trialbot.tasktest.features.auth
 
-import com.trialbot.tasktest.features.auth.UserAuthService
 import com.trialbot.tasktest.models.UserLoginRequest
 import com.trialbot.tasktest.models.UserLoginResponse
 import com.trialbot.tasktest.models.UserRegisterRequest

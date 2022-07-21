@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import javax.persistence.EntityNotFoundException
+import javax.transaction.Transactional
 
 @Service
 class HabitService(
@@ -61,6 +62,14 @@ class HabitService(
     fun deleteHabit(habitId: Int) {
         if (habitRepo.findByIdOrNull(habitId) == null) throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
         habitRepo.deleteById(habitId)
+    }
+
+    @Transactional
+    fun getHabitCompletions(habitId: Int): List<HabitCompletionDto> {
+        val habit = habitRepo.findByIdOrNull(habitId)
+            ?: throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
+
+        return habit.completions.map { it.toDto() }
     }
 
     fun addHabitCompletion(requestData: HabitCompletionReceiveDto): HabitCompletionDto {

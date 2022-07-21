@@ -289,6 +289,72 @@ internal class HabitServiceTest(
     }
 
     @Test
+    fun `getHabitCompletions successful`() {
+        val habit = Habit(
+            name = "Habit name",
+            category = "Entertainment",
+            user = userRepo.findByIdOrNull(4) ?: throw  EntityNotFoundException(),
+            type = 1,
+            description = "habit description",
+            difficulty = 1
+        )
+        val habitDb = habitRepo.save(habit)
+
+        val habitCompletions = listOf(
+            HabitCompletion(
+                date = Instant.now(),
+                habit = habitDb,
+                rating = 3,
+                isPositive = true
+            ),
+            HabitCompletion(
+                date = Instant.now(),
+                habit = habitDb,
+                rating = 2,
+                isPositive = false
+            ),
+        )
+        habitCompletionRepo.saveAll(habitCompletions)
+
+        val completionsDb = habitService.getHabitCompletions(habitDb.id!!)
+        assertThat(completionsDb).isNotEmpty
+        assertEquals(2, completionsDb.size)
+        assertThat(completionsDb[0]).matches { it.rating == 3 && it.isPositive }
+        assertThat(completionsDb[1]).matches { it.rating == 2 && !it.isPositive }
+
+        // deleting
+        habitRepo.deleteById(habitDb.id!!)
+        assertThat(habitCompletionRepo.findByIdOrNull(completionsDb[0].id!!)).isNull()
+    }
+
+    @Test
+    fun `getHabitCompletions habit not found`() {
+        assertThrows(EntityNotFoundException::class.java) {
+            habitService.getHabitCompletions(646545)
+        }
+    }
+
+    @Test
+    fun `getHabitCompletions are empty`() {
+        val habit = Habit(
+            name = "Habit name",
+            category = "Entertainment",
+            user = userRepo.findByIdOrNull(4) ?: throw  EntityNotFoundException(),
+            type = 1,
+            description = "habit description",
+            difficulty = 1
+        )
+        val habitDb = habitRepo.save(habit)
+
+
+        val completionsDb = habitService.getHabitCompletions(habitDb.id!!)
+        assertThat(completionsDb).isEmpty()
+
+        // deleting
+        habitRepo.deleteById(habitDb.id!!)
+    }
+
+    @Test
     fun `addHabitCompletion successful`() {
         val timeNow = Instant.now()
 

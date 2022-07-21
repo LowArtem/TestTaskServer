@@ -31,8 +31,8 @@ open class Habit(
     open val id: Int? = null,
 ) {
 
-    @OneToMany(mappedBy = "habit", cascade = [CascadeType.DETACH, CascadeType.MERGE, CascadeType.REMOVE], orphanRemoval = true)
-    private val completions: List<HabitCompletion> = listOf()
+    @OneToMany(mappedBy = "habit", cascade = [CascadeType.ALL], orphanRemoval = true)
+    open val completions: List<HabitCompletion> = listOf()
 }
 
 data class HabitReceiveDto(
@@ -49,8 +49,8 @@ data class HabitResponseDto(
     var type: Int = Type.POSITIVE.ordinal,
     var description: String? = null,
     var difficulty: Int = Difficulty.NORMAL.ordinal,
-    val id: Int? = null
+    val id: Int
 )
 
-fun Habit.toResponseDto(): HabitResponseDto = HabitResponseDto(name, category, type, description, difficulty, id)
+fun Habit.toResponseDto(): HabitResponseDto = HabitResponseDto(name, category, type, description, difficulty, id ?: -1)
 

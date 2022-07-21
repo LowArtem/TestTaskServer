@@ -32,7 +32,11 @@ open class DailyHabit(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     open val id: Int? = null
-)
+) {
+
+    @OneToMany(mappedBy = "dailyHabit", cascade = [CascadeType.ALL], orphanRemoval = true)
+    open val completions: List<DailyHabitCompletion> = listOf()
+}
 
 data class DailyHabitReceiveDto(
     val name: String,

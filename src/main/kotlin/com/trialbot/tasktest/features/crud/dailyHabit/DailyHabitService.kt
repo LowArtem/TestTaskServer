@@ -1,5 +1,6 @@
 package com.trialbot.tasktest.features.crud.dailyHabit
 
+import com.trialbot.tasktest.features.crud.habit.HabitService
 import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.repositories.DailyHabitCompletionRepository
 import com.trialbot.tasktest.repositories.DailyHabitRepository
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import javax.persistence.EntityNotFoundException
+import javax.transaction.Transactional
 
 @Service
 class DailyHabitService(
@@ -67,7 +69,15 @@ class DailyHabitService(
         dailyHabitRepo.deleteById(habitId)
     }
 
-    fun addHabitCompletion(requestData: DailyHabitCompletionReceiveDto): DailyHabitCompletionDto {
+    @Transactional
+    fun getDailyHabitCompletions(habitId: Int): List<DailyHabitCompletionDto> {
+        val habit = dailyHabitRepo.findByIdOrNull(habitId)
+            ?: throw EntityNotFoundException(DAILY_HABIT_NOT_FOUND_ERROR_MESSAGE)
+
+        return habit.completions.map { it.toDto() }
+    }
+
+    fun addDailyHabitCompletion(requestData: DailyHabitCompletionReceiveDto): DailyHabitCompletionDto {
         val dailyHabit = dailyHabitRepo.findByIdOrNull(requestData.dailyHabitId) ?: throw EntityNotFoundException(
             DAILY_HABIT_NOT_FOUND_ERROR_MESSAGE
         )
@@ -76,7 +86,7 @@ class DailyHabitService(
         return dailyHabitCompletionRepo.save(dailyHabitCompletion).toDto()
     }
 
-    fun deleteHabitCompletion(habitCompletionId: Int) {
+    fun deleteDailyHabitCompletion(habitCompletionId: Int) {
         if (!dailyHabitRepo.existsById(habitCompletionId))
             throw EntityNotFoundException(DAILY_HABIT_COMPLETION_NOT_FOUND_ERROR_MESSAGE)
 

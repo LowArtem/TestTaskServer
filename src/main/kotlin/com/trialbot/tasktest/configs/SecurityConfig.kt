@@ -2,7 +2,6 @@ package com.trialbot.tasktest.configs
 
 import com.trialbot.tasktest.configs.jwt.AuthEntryPointJwt
 import com.trialbot.tasktest.configs.jwt.AuthTokenFilter
-import com.trialbot.tasktest.configs.jwt.JwtUtils
 import com.trialbot.tasktest.features.auth.UserAuthService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -22,7 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfig(
     private val userAuthService: UserAuthService,
     private val entryPointJwt: AuthEntryPointJwt,
-    private val jwtUtils: JwtUtils,
 ) {
 
     @Bean
@@ -35,7 +33,8 @@ class SecurityConfig(
                 configurer
                     .antMatchers("/api/auth/**").permitAll()
                     .antMatchers("/api/test/**").permitAll()
-                    .anyRequest().authenticated()
+                    .antMatchers("/api/**").authenticated()
+                    .anyRequest().permitAll()
             }
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter::class.java)

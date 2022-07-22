@@ -3,6 +3,7 @@ package com.trialbot.tasktest.features.crud.habit
 import com.trialbot.tasktest.models.HabitCompletionReceiveDto
 import com.trialbot.tasktest.models.HabitReceiveDto
 import com.trialbot.tasktest.models.HabitResponseDto
+import com.trialbot.tasktest.utils.getToken
 import io.jsonwebtoken.MalformedJwtException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,10 +18,10 @@ class HabitController(
     private val habitService: HabitService
 ) {
 
-    @GetMapping("/")
+    @GetMapping("")
     fun getHabitsByUser(@RequestHeader(name="Authorization") token: String): ResponseEntity<*> {
         return perform {
-            val habits = habitService.getHabitsByUser(token)
+            val habits = habitService.getHabitsByUser(token.getToken() ?: "")
             ResponseEntity.ok().body(habits)
         }
     }
@@ -30,7 +31,7 @@ class HabitController(
         @RequestHeader(name="Authorization") token: String,
         @RequestBody habit: HabitReceiveDto): ResponseEntity<*> {
         return perform {
-            val habitCreated = habitService.addHabit(token, habit)
+            val habitCreated = habitService.addHabit(token.getToken() ?: "", habit)
             ResponseEntity.ok().body(habitCreated)
         }
     }

@@ -19,8 +19,8 @@ object JwtUtils {
     fun generateJwtToken(authentication: Authentication): String {
         val userPrincipal: UserSecurityDetails = authentication.principal as UserSecurityDetails
         return Jwts.builder()
-            .setSubject(userPrincipal.username)
             .setClaims(mutableMapOf<String, Any>("userId" to (userPrincipal.user.id ?: -1)))
+            .setSubject(userPrincipal.username)
             .setIssuedAt(Date())
             .setExpiration(Date(Date().time + expirationMs))
             .signWith(SignatureAlgorithm.HS512, jwtSecret).compact()

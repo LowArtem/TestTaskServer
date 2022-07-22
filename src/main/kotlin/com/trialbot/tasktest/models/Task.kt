@@ -87,5 +87,10 @@ data class TaskResponseDto(
     val id: Int? = null
 )
 
+data class TaskStatusReceiveDto(
+    val taskId: Int,
+    val status: Boolean
+)
+
 fun Task.toResponseDto(): TaskResponseDto = TaskResponseDto(name, deadline, status, difficulty, priority, description, id)
 

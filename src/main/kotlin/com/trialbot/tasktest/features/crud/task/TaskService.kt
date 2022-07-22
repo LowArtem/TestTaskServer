@@ -71,11 +71,14 @@ class TaskService(
     }
 
     @Transactional
-    fun updateTaskStatus(taskId: Int, status: Boolean): Boolean {
+    fun updateTaskStatus(taskId: Int, status: Boolean) {
         if (!taskRepo.existsById(taskId))
             throw EntityNotFoundException(TASK_NOT_FOUND_ERROR_MESSAGE)
 
-        return taskRepo.updateTaskSetStatusForId(status, taskId) == 1
+        val successResult = taskRepo.updateTaskSetStatusForId(status, taskId) == 1
+
+        if (!successResult)
+            throw UnsupportedOperationException("Cannot update this entity")
     }
 
     fun deleteTask(taskId: Int) {

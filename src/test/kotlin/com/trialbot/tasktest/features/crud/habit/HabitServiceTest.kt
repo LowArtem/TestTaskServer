@@ -372,6 +372,15 @@ internal class HabitServiceTest(
     }
 
     @Test
+    fun `addHabitCompletion wrong type`() {
+        val timeNow = Instant.now()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            habitService.addHabitCompletion(HabitCompletionReceiveDto(newHabitId, timeNow, 5, true))
+        }
+    }
+
+    @Test
     fun `addHabitCompletion habit doesn't exist`() {
         val timeNow = Instant.now()
 

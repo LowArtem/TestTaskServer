@@ -83,7 +83,10 @@ class HabitController(
             ResponseEntity.badRequest().body("Entity not found")
         } catch (_: MalformedJwtException) {
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Authentication failed")
-        } catch (e: Exception) {
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.status(HttpStatus.CONFLICT).body(e.localizedMessage)
+        }
+        catch (e: Exception) {
             ResponseEntity.internalServerError().body("Unknown error: ${e.localizedMessage}")
         }
     }

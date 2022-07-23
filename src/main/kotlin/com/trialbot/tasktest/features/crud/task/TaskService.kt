@@ -18,7 +18,6 @@ class TaskService(
     @Autowired private val taskRepo: TaskRepository,
     @Autowired private val taskUserRepository: TaskUserRepository,
     @Autowired private val userRepo: UserRepository,
-    @Autowired private val currentDateTimeProvider: CurrentDateTimeProvider
 ) {
 
     fun getTasksByUser(token: String): List<TaskResponseDto> {
@@ -49,7 +48,7 @@ class TaskService(
         val taskToUser = TaskUser(
             user = user,
             task = taskSaved,
-            date = currentDateTimeProvider.getCurrentDateTime()
+            date = null
         )
 
         taskUserRepository.save(taskToUser)

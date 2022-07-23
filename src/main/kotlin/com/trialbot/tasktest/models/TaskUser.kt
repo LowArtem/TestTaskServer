@@ -39,8 +39,8 @@ open class TaskUser(
     @JoinColumn(name = "userid")
     open val user: User,
 
-    @Column(nullable = false)
-    open val date: Instant,
+    @Column(nullable = true)
+    open val date: Instant?,
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId("taskId")

@@ -113,7 +113,7 @@ internal class TaskServiceTest(
 
         assertThat(tasksByThisUser).contains(currentTaskDb)
 
-        // delete this
+        // delete created object
         taskRepo.deleteById(taskAdded!!.id!!)
         assertNull(taskRepo.findByIdOrNull(taskAdded!!.id!!))
     }
@@ -182,9 +182,9 @@ internal class TaskServiceTest(
 
         taskDb.status = !taskDb.status
 
-        val statusUpdated: Boolean = taskService.updateTaskStatus(taskId, taskDb.status)
-
-        assertTrue(statusUpdated)
+        assertDoesNotThrow {
+            taskService.updateTaskStatus(taskId, taskDb.status)
+        }
 
         val taskDbAfter = taskRepo.findByIdOrNull(taskId)?.toResponseDto()
             ?: throw EntityNotFoundException()

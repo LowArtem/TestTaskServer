@@ -12,7 +12,7 @@ open class Task (
     open var name: String,
 
     @Column(nullable = false)
-    open var deadline: Instant,
+    open var deadline: Instant?,
 
     @Column(nullable = false)
     open var status: Boolean = false,
@@ -71,7 +71,7 @@ open class Task (
 
 data class TaskReceiveDto(
     val name: String,
-    val deadline: Instant,
+    val deadline: Instant?,
     val difficulty: Int,
     val priority: Int,
     val description: String? = null
@@ -79,7 +79,7 @@ data class TaskReceiveDto(
 
 data class TaskResponseDto(
     var name: String,
-    var deadline: Instant,
+    var deadline: Instant?,
     var status: Boolean = false,
     var difficulty: Int,
     var priority: Int,

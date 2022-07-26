@@ -64,7 +64,7 @@ internal class HabitServiceTest(
             name = "Brand new habit",
             category = "Health",
             user = user,
-            type = 1,
+            type = 0,
             description = "test habit for testing",
             difficulty = 2
         )
@@ -376,7 +376,7 @@ internal class HabitServiceTest(
         val timeNow = Instant.now()
 
         assertThrows(IllegalArgumentException::class.java) {
-            habitService.addHabitCompletion(HabitCompletionReceiveDto(newHabitId, timeNow, 5, true))
+            habitService.addHabitCompletion(HabitCompletionReceiveDto(newHabitId, timeNow, 5, false))
         }
     }
 

@@ -18,7 +18,7 @@ open class DailyHabit(
     open val user: User,
 
     @Column(nullable = false)
-    open var deadline: Instant,
+    open var deadline: Instant?,
 
     @Column(nullable = false)
     open var status: Boolean = false,
@@ -41,7 +41,7 @@ open class DailyHabit(
 data class DailyHabitReceiveDto(
     val name: String,
     val category: String,
-    val deadline: Instant,
+    val deadline: Instant?,
     val description: String?,
     val difficulty: Int = Difficulty.NORMAL.ordinal
 )
@@ -49,7 +49,7 @@ data class DailyHabitReceiveDto(
 data class DailyHabitResponseDto(
     val name: String,
     val category: String,
-    val deadline: Instant,
+    val deadline: Instant?,
     val status: Boolean = false,
     val description: String? = null,
     val difficulty: Int = Difficulty.NORMAL.ordinal,

@@ -20,12 +20,12 @@ internal class UserAuthServiceTest(
 
     @Test
     fun `login successful`() {
-        val username = "TrialBot"
+        val email = "example7@example.com"
         val password = "TrialBot"
 
-        val userLogged: UserLoginResponse? = userAuthService.login(UserLoginRequest(username, password), authenticationProvider)
+        val userLogged: UserLoginResponse? = userAuthService.login(UserLoginRequest(email, password), authenticationProvider)
         assertNotNull(userLogged)
-        assertEquals(username, userLogged?.username)
+        assertEquals(email, userLogged?.email)
         assertEquals(password, userLogged?.password)
         assertNotNull(userLogged?.token)
         assertEquals(7, userLogged?.id)
@@ -33,13 +33,13 @@ internal class UserAuthServiceTest(
 
     @Test
     fun `login user that does not exist`() {
-        val username = "Bullshit"
+        val email = "bullshit@example.com"
         val password = "asdgasdgashfg"
 
         var userLogged: UserLoginResponse? = null
 
         assertThrows(BadCredentialsException::class.java) {
-            userLogged = userAuthService.login(UserLoginRequest(username, password), authenticationProvider)
+            userLogged = userAuthService.login(UserLoginRequest(email, password), authenticationProvider)
         }
 
         assertNull(userLogged)
@@ -47,13 +47,18 @@ internal class UserAuthServiceTest(
 
     @Test
     fun `register successful`() {
+        val email = "brand_new_email@example.com"
         val username = "Brand new username"
         val password = "brandnewusername"
 
-        val userRegistered: Boolean = userAuthService.register(UserRegisterRequest(username, password))
+        val userRegistered: Boolean = userAuthService.register(UserRegisterRequest(
+            username = username,
+            email = email,
+            password = password
+        ))
         assertTrue(userRegistered)
 
-        userRepo.findByUsernameAndPassword(username, password).firstOrNull().let {
+        userRepo.findByEmailAndPassword(email, password).firstOrNull().let {
             assertNotNull(it)
             assertNotNull(it?.id)
 
@@ -62,10 +67,44 @@ internal class UserAuthServiceTest(
     }
 
     @Test
-    fun `register user that already exist`() {
+    fun `register user when email is already exists`() {
+        val email = "example7@example.com"
         val username = "TrialBot"
         val password = "TrialBot"
-        val userRegistered: Boolean = userAuthService.register(UserRegisterRequest(username, password))
+
+        val userRegistered: Boolean = userAuthService.register(UserRegisterRequest(
+            username = username,
+            email = email,
+            password = password
+        ))
+        assertFalse(userRegistered)
+    }
+
+    @Test
+    fun `register user when username is already exists`() {
+        val email = "this_email_doesnt_exist@example.com"
+        val username = "TrialBot"
+        val password = "TrialBot"
+
+        val userRegistered: Boolean = userAuthService.register(UserRegisterRequest(
+            username = username,
+            email = email,
+            password = password
+        ))
+        assertFalse(userRegistered)
+    }
+
+    @Test
+    fun `register given email is not valid`() {
+        val email = "this_is_invalid_email"
+        val username = "a;sdlkhag;hsd;afdhga[perotyafy;ga;kjdfh"
+        val password = "TrialBot"
+
+        val userRegistered: Boolean = userAuthService.register(UserRegisterRequest(
+            username = username,
+            email = email,
+            password = password
+        ))
         assertFalse(userRegistered)
     }
 

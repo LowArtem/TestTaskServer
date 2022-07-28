@@ -38,7 +38,7 @@ object JwtUtils {
         return false
     }
 
-    fun getUserNameFromJwtToken(jwt: String?): String? {
+    fun getUserEmailFromJwtToken(jwt: String?): String? {
         return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(jwt).body.subject
     }
 

@@ -23,8 +23,8 @@ class AuthTokenFilter(
         try {
             val jwt: String? = parseJwt(request)
             if (jwt != null && JwtUtils.validateJwtToken(jwt)) {
-                val username = JwtUtils.getUserNameFromJwtToken(jwt)
-                val userDetails: UserDetails = userAuthService.loadUserByUsername(username)
+                val email = JwtUtils.getUserEmailFromJwtToken(jwt)
+                val userDetails: UserDetails = userAuthService.loadUserByUsername(email)
                 val authenticationToken =
                     UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
                 authenticationToken.details = WebAuthenticationDetailsSource().buildDetails(request)

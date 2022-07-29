@@ -15,9 +15,9 @@ import javax.transaction.Transactional
 
 @Service
 class HabitService(
-    @Autowired private val habitRepo: HabitRepository,
-    @Autowired private val userRepo: UserRepository,
-    @Autowired private val habitCompletionRepo: HabitCompletionRepository,
+    private val habitRepo: HabitRepository,
+    private val userRepo: UserRepository,
+    private val habitCompletionRepo: HabitCompletionRepository,
 ) {
 
     fun getHabitsByUser(token: String): List<HabitResponseDto> {

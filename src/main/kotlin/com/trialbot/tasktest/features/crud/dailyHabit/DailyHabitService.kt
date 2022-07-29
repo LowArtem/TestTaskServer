@@ -14,9 +14,9 @@ import javax.transaction.Transactional
 
 @Service
 class DailyHabitService(
-    @Autowired private val dailyHabitRepo: DailyHabitRepository,
-    @Autowired private val userRepo: UserRepository,
-    @Autowired private val dailyHabitCompletionRepo: DailyHabitCompletionRepository
+    private val dailyHabitRepo: DailyHabitRepository,
+    private val userRepo: UserRepository,
+    private val dailyHabitCompletionRepo: DailyHabitCompletionRepository
 ) {
 
     fun getDailyHabitsByUser(token: String): List<DailyHabitResponseDto> {

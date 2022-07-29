@@ -1,9 +1,7 @@
 package com.trialbot.tasktest.features.crud.task
 
-import com.trialbot.tasktest.models.Task
-import com.trialbot.tasktest.models.TaskReceiveDto
-import com.trialbot.tasktest.models.TaskResponseDto
-import com.trialbot.tasktest.models.toResponseDto
+import com.trialbot.tasktest.models.*
+import com.trialbot.tasktest.repositories.SubtaskRepository
 import com.trialbot.tasktest.repositories.TaskRepository
 import com.trialbot.tasktest.repositories.UserRepository
 import com.trialbot.tasktest.utils.getUserIdFromToken
@@ -18,12 +16,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
 import javax.persistence.EntityNotFoundException
+import javax.transaction.Transactional
 
 @SpringBootTest
 internal class TaskServiceTest(
     @Autowired private val taskRepo: TaskRepository,
-    @Autowired private val userRepo: UserRepository,
-    @Autowired private val taskService: TaskService
+    @Autowired private val taskService: TaskService,
+    @Autowired private val subtaskRepo: SubtaskRepository
 ) {
 
     @Test
@@ -41,6 +40,25 @@ internal class TaskServiceTest(
             tasks = taskService.getTasksByUser(tokenMock)
         }
         assertThat(tasks).isNotEmpty
+    }
+
+    @Test
+    @Transactional
+    fun `getTask with subtasks successful`() {
+        var tasks: List<TaskResponseDto> = listOf()
+
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "1821" // user with subtasks
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns 1821
+
+        assertDoesNotThrow {
+            tasks = taskService.getTasksByUser(tokenMock)
+        }
+        assertThat(tasks).isNotEmpty
+        assertTrue(tasks.any { it.subtasks.isNotEmpty() })
     }
 
     @Test
@@ -119,6 +137,58 @@ internal class TaskServiceTest(
     }
 
     @Test
+    fun `addTask task with subtasks successful`() {
+        val timeNow = Instant.now()
+
+        val taskToAdd = TaskReceiveDto(
+            name = "Brand New Task",
+            deadline = timeNow,
+            difficulty = 2,
+            priority = 1,
+            description = "Brand new task description",
+            subtasks = setOf(
+                SubtaskReceiveDto("Subtask 1", false),
+                SubtaskReceiveDto("Subtask 2", false),
+                SubtaskReceiveDto("Subtask 3", false),
+                SubtaskReceiveDto("Subtask 4", false),
+                SubtaskReceiveDto("Subtask 5", false),
+            )
+        )
+
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "4"
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns 4
+
+        var taskAdded: TaskResponseDto? = null
+        assertDoesNotThrow {
+            taskAdded = taskService.addTask(tokenMock, taskToAdd)
+        }
+        assertNotNull(taskAdded)
+        assertNotNull(taskAdded!!.id)
+        assertThat(taskAdded!!.id).isGreaterThan(0)
+
+        assertThat(taskAdded!!.subtasks).isNotEmpty
+        assertThat(taskAdded!!.subtasks).hasSize(5)
+        assertThat(taskAdded!!.subtasks.any { it.text == "Subtask 1" }).isTrue
+
+        assertEquals(taskToAdd.name, taskAdded!!.name)
+        assertEquals(taskToAdd.description, taskAdded!!.description)
+        assertEquals(taskToAdd.deadline, timeNow)
+
+        val tasksByThisUser: List<Task> = taskRepo.findByUsers_Id_UserId(4)
+        val currentTaskDb = taskRepo.findByIdOrNull(taskAdded!!.id!!) ?: throw EntityNotFoundException()
+
+        assertThat(tasksByThisUser).contains(currentTaskDb)
+
+        // delete created object
+        taskRepo.deleteById(taskAdded!!.id!!)
+        assertNull(taskRepo.findByIdOrNull(taskAdded!!.id!!))
+    }
+
+    @Test
     fun `addTask user not found`() {
         val timeNow = Instant.now()
 
@@ -145,21 +215,44 @@ internal class TaskServiceTest(
     }
 
     @Test
-    fun `updateTask successful`() {
-        val taskDb = taskRepo.findByIdOrNull(30)?.toResponseDto()
+    @Transactional
+    fun `updateTask with no subtasks successful`() {
+        val taskDb = taskRepo.findByIdOrNull(30)?.toUpdateReceiveDto()
             ?: throw EntityNotFoundException()
 
         taskDb.name = "Some name, that make sense"
-        taskDb.description = "English words are way better that strange string of letters"
+        taskDb.description = "English words are way better than strange string of letters"
         taskDb.status = !taskDb.status
 
         val taskUpdated = taskService.updateTask(taskDb)
-        assertEquals(taskDb, taskUpdated)
+        assertEquals(taskDb.name, taskUpdated.name)
+        assertEquals(taskDb.description, taskUpdated.description)
+        assertEquals(taskDb.status, taskUpdated.status)
+    }
+
+    @Test
+    @Transactional
+    fun `updateTask with subtasks successful`() {
+        val taskDb = taskRepo.findByIdOrNull(4)?.toUpdateReceiveDto()
+            ?: throw EntityNotFoundException()
+
+        taskDb.name = "Some name, that doesn't make sense"
+        taskDb.description = "English words are way worse than strange string of letters"
+        taskDb.status = !taskDb.status
+        taskDb.subtasks = taskDb.subtasks + setOf(SubtaskUpdateReceiveDto("New text task", false))
+
+        val taskUpdated = taskService.updateTask(taskDb)
+
+        assertEquals(taskDb.name, taskUpdated.name)
+        assertEquals(taskDb.description, taskUpdated.description)
+        assertEquals(taskDb.status, taskUpdated.status)
+        assertEquals(5, taskUpdated.subtasks.size)
+        assertTrue(taskUpdated.subtasks.any { it.text == "New text task" })
     }
 
     @Test
     fun `updateTask task not found`() {
-        val task = TaskResponseDto(
+        val task = TaskUpdateReceiveDto(
             name = "sdfsdf",
             deadline = Instant.now(),
             difficulty = 2,
@@ -174,6 +267,7 @@ internal class TaskServiceTest(
     }
 
     @Test
+    @Transactional
     fun `updateTaskStatus successful`() {
         val taskId = 30
 
@@ -200,6 +294,32 @@ internal class TaskServiceTest(
     }
 
     @Test
+    fun `updateSubtaskStatus successful`() {
+        val subtaskId = 99
+
+        val taskDb = subtaskRepo.findByIdOrNull(subtaskId)?.toUpdateReceiveDto()
+            ?: throw EntityNotFoundException()
+
+        taskDb.status = !taskDb.status
+
+        assertDoesNotThrow {
+            taskService.updateSubtaskStatus(subtaskId, taskDb.status)
+        }
+
+        val taskDbAfter = subtaskRepo.findByIdOrNull(subtaskId)?.toUpdateReceiveDto()
+            ?: throw EntityNotFoundException()
+
+        assertEquals(taskDb, taskDbAfter)
+    }
+
+    @Test
+    fun `updateSubtaskStatus subtask not found`() {
+        assertThrows(EntityNotFoundException::class.java) {
+            taskService.updateSubtaskStatus(684684, true)
+        }
+    }
+
+    @Test
     fun `deleteTask successful`() {
         val task = Task(
             name = "Name",
@@ -222,6 +342,29 @@ internal class TaskServiceTest(
     fun `deleteTask task not found`() {
         assertThrows(EntityNotFoundException::class.java) {
             taskService.deleteTask(684684)
+        }
+    }
+
+    @Test
+    fun `deleteSubtask successful`() {
+        val subtask = Subtask(
+            text = "Brand new subtask",
+            status = false,
+            parentTask = taskRepo.findByIdOrNull(4) ?: throw EntityNotFoundException()
+        )
+
+        val savedId = subtaskRepo.save(subtask).id ?: throw EntityNotFoundException()
+
+        assertDoesNotThrow {
+            taskService.deleteSubtask(savedId)
+        }
+        assertNull(subtaskRepo.findByIdOrNull(savedId))
+    }
+
+    @Test
+    fun `deleteSubtask subtask not found`() {
+        assertThrows(EntityNotFoundException::class.java) {
+            taskService.deleteSubtask(684684)
         }
     }
 }

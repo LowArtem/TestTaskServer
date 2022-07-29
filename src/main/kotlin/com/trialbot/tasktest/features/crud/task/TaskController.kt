@@ -36,9 +36,9 @@ class TaskController(
     }
 
     @PutMapping("/update")
-    fun updateHabit(@RequestBody habit: TaskResponseDto): ResponseEntity<*> {
+    fun updateHabit(@RequestBody task: TaskUpdateReceiveDto): ResponseEntity<*> {
         return perform {
-            val habitUpdated = taskService.updateTask(habit)
+            val habitUpdated = taskService.updateTask(task)
             ResponseEntity.ok().body(habitUpdated)
         }
     }

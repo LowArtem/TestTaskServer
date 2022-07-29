@@ -100,7 +100,7 @@ internal class HabitServiceTest(
         assertDoesNotThrow {
             habits = habitService.getHabitsByUser(authToken)
         }
-        assertEquals(23, habits.size)
+        assertEquals(43, habits.size)
 
         val habitIdExpected = 55
         val habitNameExpected = "Cash Manager"
@@ -132,7 +132,7 @@ internal class HabitServiceTest(
         assertDoesNotThrow {
             habits = habitService.getHabitsByUser(tokenMock)
         }
-        assertEquals(23, habits.size)
+        assertEquals(43, habits.size)
 
         val habitIdExpected = 55
         val habitNameExpected = "Cash Manager"

@@ -26,8 +26,17 @@ open class Task (
     @Column(nullable = true)
     open var description: String? = null,
 
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH])
     open val taskUsers: Set<TaskUser> = setOf(),
+
+    @OneToMany(
+        mappedBy = "parentTask",
+        targetEntity = Subtask::class,
+        fetch = FetchType.LAZY,
+        cascade = [CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH],
+        orphanRemoval = true
+    )
+    open var subtasks: Set<Subtask> = setOf(),
 
     // TODO: реализовать данные таблицы
     @Column(nullable = true, name = "groupeventid")
@@ -74,7 +83,8 @@ data class TaskReceiveDto(
     val deadline: Instant?,
     val difficulty: Int,
     val priority: Int,
-    val description: String? = null
+    val description: String? = null,
+    val subtasks: Set<SubtaskReceiveDto>? = null
 )
 
 data class TaskResponseDto(
@@ -84,7 +94,19 @@ data class TaskResponseDto(
     var difficulty: Int,
     var priority: Int,
     var description: String?,
-    val id: Int? = null
+    val id: Int? = null,
+    var subtasks: Set<SubtaskResponseDto> = setOf()
+)
+
+data class TaskUpdateReceiveDto(
+    var name: String,
+    var deadline: Instant?,
+    var status: Boolean = false,
+    var difficulty: Int,
+    var priority: Int,
+    var description: String?,
+    val id: Int? = null,
+    var subtasks: Set<SubtaskUpdateReceiveDto> = setOf()
 )
 
 data class TaskStatusReceiveDto(
@@ -92,5 +114,24 @@ data class TaskStatusReceiveDto(
     val status: Boolean
 )
 
-fun Task.toResponseDto(): TaskResponseDto = TaskResponseDto(name, deadline, status, difficulty, priority, description, id)
+fun Task.toResponseDto(): TaskResponseDto = TaskResponseDto(
+    name = name,
+    deadline = deadline,
+    status = status,
+    difficulty = difficulty,
+    priority = priority,
+    description = description,
+    id = id,
+    subtasks = subtasks.map { it.toResponseDto() }.toSet()
+)
 
+fun Task.toUpdateReceiveDto(): TaskUpdateReceiveDto = TaskUpdateReceiveDto(
+    name = name,
+    deadline = deadline,
+    status = status,
+    difficulty = difficulty,
+    priority = priority,
+    description = description,
+    id = id,
+    subtasks = subtasks.map { it.toUpdateReceiveDto() }.toSet()
+)

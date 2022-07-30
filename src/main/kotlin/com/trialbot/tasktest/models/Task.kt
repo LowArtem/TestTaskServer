@@ -2,6 +2,7 @@ package com.trialbot.tasktest.models
 
 import com.trialbot.tasktest.models.enums.Difficulty
 import com.trialbot.tasktest.models.enums.Priority
+import com.trialbot.tasktest.models.enums.RepeatingInterval
 import java.time.Instant
 import javax.persistence.*
 
@@ -11,7 +12,7 @@ open class Task (
     @Column(nullable = false)
     open var name: String,
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     open var deadline: Instant?,
 
     @Column(nullable = false)
@@ -23,11 +24,20 @@ open class Task (
     @Column(nullable = false)
     open var priority: Int = Priority.NORMAL.ordinal,
 
+    @Column(name = "repeatinginterval", nullable = false)
+    open var repeatingInterval: Int = RepeatingInterval.NONE.ordinal,
+
+    @Column(name = "parentrepeatingtaskid", nullable = true)
+    open var parentRepeatingTask: Int? = null,
+
     @Column(nullable = true)
     open var description: String? = null,
 
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH])
-    open val taskUsers: Set<TaskUser> = setOf(),
+    @Column(nullable = true)
+    open var notification: Instant? = null,
+
+    @OneToMany(mappedBy = "task", targetEntity = TaskUser::class, fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH])
+    open var taskUsers: Set<TaskUser> = setOf(),
 
     @OneToMany(
         mappedBy = "parentTask",
@@ -47,8 +57,8 @@ open class Task (
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    open val id: Int? = null
-) {
+    open var id: Int? = null
+) : Cloneable  {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -76,6 +86,25 @@ open class Task (
         result = 31 * result + (id ?: 0)
         return result
     }
+
+    public override fun clone(): Task {
+        return Task(
+            name = name,
+            deadline = deadline,
+            status = status,
+            difficulty = difficulty,
+            priority = priority,
+            repeatingInterval = repeatingInterval,
+            parentRepeatingTask = parentRepeatingTask,
+            description = description,
+            notification = notification,
+            taskUsers = taskUsers,
+            subtasks = subtasks,
+            groupEvent = groupEvent,
+            userEvent = userEvent,
+            id = id
+        )
+    }
 }
 
 data class TaskReceiveDto(
@@ -84,6 +113,8 @@ data class TaskReceiveDto(
     val difficulty: Int,
     val priority: Int,
     val description: String? = null,
+    val repeatingInterval: Int = RepeatingInterval.NONE.ordinal,
+    val notification: Instant? = null,
     val subtasks: Set<SubtaskReceiveDto>? = null
 )
 
@@ -94,6 +125,8 @@ data class TaskResponseDto(
     var difficulty: Int,
     var priority: Int,
     var description: String?,
+    var repeatingInterval: Int = RepeatingInterval.NONE.ordinal,
+    var notification: Instant? = null,
     val id: Int? = null,
     var subtasks: Set<SubtaskResponseDto> = setOf()
 )
@@ -105,6 +138,8 @@ data class TaskUpdateReceiveDto(
     var difficulty: Int,
     var priority: Int,
     var description: String?,
+    var repeatingInterval: Int = RepeatingInterval.NONE.ordinal,
+    var notification: Instant? = null,
     val id: Int? = null,
     var subtasks: Set<SubtaskUpdateReceiveDto> = setOf()
 )
@@ -121,6 +156,8 @@ fun Task.toResponseDto(): TaskResponseDto = TaskResponseDto(
     difficulty = difficulty,
     priority = priority,
     description = description,
+    repeatingInterval = repeatingInterval,
+    notification = notification,
     id = id,
     subtasks = subtasks.map { it.toResponseDto() }.toSet()
 )
@@ -132,6 +169,8 @@ fun Task.toUpdateReceiveDto(): TaskUpdateReceiveDto = TaskUpdateReceiveDto(
     difficulty = difficulty,
     priority = priority,
     description = description,
+    repeatingInterval = repeatingInterval,
+    notification = notification,
     id = id,
     subtasks = subtasks.map { it.toUpdateReceiveDto() }.toSet()
 )

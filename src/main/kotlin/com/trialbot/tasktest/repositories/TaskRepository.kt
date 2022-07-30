@@ -19,4 +19,7 @@ interface TaskRepository : CrudRepository<Task, Int> {
     @Modifying(clearAutomatically = true)
     @Query("update tasks set status = ?1 where id = ?2", nativeQuery = true)
     fun updateTaskSetStatusForId(status: Boolean, id: Int): Int
+
+    @Query("select * from tasks where parentrepeatingtaskid = ?1", nativeQuery = true)
+    fun findChildRepeatingTasks(parentTaskId: Int): List<Task>
 }

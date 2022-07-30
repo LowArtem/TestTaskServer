@@ -1,6 +1,8 @@
 package com.trialbot.tasktest.features.crud.task
 
 import com.trialbot.tasktest.models.*
+import com.trialbot.tasktest.models.enums.RepeatingInterval
+import com.trialbot.tasktest.models.enums.toMillis
 import com.trialbot.tasktest.repositories.SubtaskRepository
 import com.trialbot.tasktest.repositories.TaskRepository
 import com.trialbot.tasktest.repositories.TaskUserRepository
@@ -9,6 +11,7 @@ import com.trialbot.tasktest.utils.getUserFromToken
 import com.trialbot.tasktest.utils.getUserIdFromToken
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import java.time.Instant
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
@@ -44,6 +47,8 @@ class TaskService(
             difficulty = taskReceive.difficulty,
             priority = taskReceive.priority,
             description = taskReceive.description,
+            repeatingInterval = taskReceive.repeatingInterval,
+            notification = taskReceive.notification
         )
 
         val taskSaved = taskRepo.save(task)
@@ -75,6 +80,54 @@ class TaskService(
     }
 
     @Transactional
+    fun addTaskRepeat(repeatableTaskId: Int): TaskResponseDto {
+        val task = taskRepo.findByIdOrNull(repeatableTaskId)
+            ?: throw EntityNotFoundException(TASK_NOT_FOUND_ERROR_MESSAGE)
+
+        if (task.repeatingInterval == 0) throw IllegalStateException("Task should be repeatable")
+        if (task.deadline == null) throw IllegalStateException("Task's deadline cannot be null")
+
+        val newTask = task.clone()
+        newTask.id = null
+
+        newTask.deadline = Instant.ofEpochMilli(
+            task.deadline!!.toEpochMilli() + RepeatingInterval.values()[task.repeatingInterval].toMillis(task.deadline!!)
+        )
+
+        if (task.parentRepeatingTask == null) {
+            newTask.parentRepeatingTask = task.id
+        }
+
+        // Make subtasks' copies
+        if (task.subtasks.isNotEmpty()) {
+            val newSubtasks: MutableSet<Subtask> = mutableSetOf()
+            for (sub in task.subtasks) {
+                val newSub = sub.clone()
+                newSub.id = null
+                newSubtasks.add(newSub)
+            }
+            newTask.subtasks = newSubtasks
+        } else {
+            newTask.subtasks = setOf()
+        }
+
+        // Make connections with users
+        if (task.taskUsers.isNotEmpty()) {
+            val newTaskUsers: MutableSet<TaskUser> = mutableSetOf()
+            for (tu in task.taskUsers) {
+                val newTaskUser = TaskUser(tu.user, null, tu.task)
+                newTaskUsers.add(newTaskUser)
+            }
+            newTask.taskUsers = newTaskUsers
+        } else {
+            newTask.taskUsers = setOf()
+        }
+
+
+        return taskRepo.save(newTask).toResponseDto()
+    }
+
+    @Transactional
     fun updateTask(taskReceive: TaskUpdateReceiveDto): TaskResponseDto {
         val taskDb = taskRepo.findByIdOrNull(taskReceive.id ?: -1)
             ?: throw EntityNotFoundException(TASK_NOT_FOUND_ERROR_MESSAGE)
@@ -85,6 +138,8 @@ class TaskService(
         taskDb.priority = taskReceive.priority
         taskDb.difficulty = taskReceive.difficulty
         taskDb.description = taskReceive.description
+        taskDb.repeatingInterval = taskReceive.repeatingInterval
+        taskDb.notification = taskReceive.notification
 
         val task = taskRepo.save(taskDb).toResponseDto()
 
@@ -136,9 +191,19 @@ class TaskService(
             throw UnsupportedOperationException("Cannot update this entity")
     }
 
+    @Transactional
     fun deleteTask(taskId: Int) {
         if (!taskRepo.existsById(taskId))
             throw EntityNotFoundException(TASK_NOT_FOUND_ERROR_MESSAGE)
+
+        // deleting child repeating tasks
+        val task = taskRepo.findByIdOrNull(taskId)!!
+        if (task.repeatingInterval > 0) {
+            val childRepeatingTasks = taskRepo.findChildRepeatingTasks(task.id!!)
+            childRepeatingTasks.forEach {
+                taskRepo.delete(it)
+            }
+        }
 
         taskRepo.deleteById(taskId)
     }

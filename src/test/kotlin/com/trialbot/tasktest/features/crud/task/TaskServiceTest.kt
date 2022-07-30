@@ -1,8 +1,10 @@
 package com.trialbot.tasktest.features.crud.task
 
 import com.trialbot.tasktest.models.*
+import com.trialbot.tasktest.models.enums.RepeatingInterval
 import com.trialbot.tasktest.repositories.SubtaskRepository
 import com.trialbot.tasktest.repositories.TaskRepository
+import com.trialbot.tasktest.repositories.TaskUserRepository
 import com.trialbot.tasktest.repositories.UserRepository
 import com.trialbot.tasktest.utils.getUserIdFromToken
 import io.mockk.every
@@ -15,6 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.Month
+import java.time.ZoneId
+import java.util.Calendar
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
@@ -22,6 +28,8 @@ import javax.transaction.Transactional
 internal class TaskServiceTest(
     @Autowired private val taskRepo: TaskRepository,
     @Autowired private val taskService: TaskService,
+    @Autowired private val userRepo: UserRepository,
+    @Autowired private val taskUserRepository: TaskUserRepository,
     @Autowired private val subtaskRepo: SubtaskRepository
 ) {
 
@@ -346,6 +354,58 @@ internal class TaskServiceTest(
     }
 
     @Test
+    fun `deleteTask task that is a repeatable parent task`() {
+        val task = Task(
+            name = "New test mega name",
+            deadline = Instant.now(),
+            status = false,
+            difficulty = 1,
+            priority = 2,
+            repeatingInterval = RepeatingInterval.WEEKLY.ordinal,
+            parentRepeatingTask = null,
+            description = "New test mega name description"
+        )
+        val taskSaved = taskRepo.save(task)
+        val repeatedTask = taskService.addTaskRepeat(taskSaved.id!!)
+
+        taskService.deleteTask(taskSaved.id!!)
+        assertNull(taskRepo.findByIdOrNull(taskSaved.id!!))
+        assertNull(taskRepo.findByIdOrNull(repeatedTask.id!!))
+    }
+
+    @Test
+    fun `deleteTask task that is a repeatable child`() {
+        val task = Task(
+            name = "New test mega name",
+            deadline = Instant.now(),
+            status = false,
+            difficulty = 1,
+            priority = 2,
+            repeatingInterval = RepeatingInterval.WEEKLY.ordinal,
+            parentRepeatingTask = null,
+            description = "New test mega name description"
+        )
+        val taskSaved = taskRepo.save(task)
+        val repeatedTask = taskService.addTaskRepeat(taskSaved.id!!)
+
+        val metaRepeatedTask = taskService.addTaskRepeat(repeatedTask.id!!)
+
+        taskService.deleteTask(repeatedTask.id!!)
+        assertNull(taskRepo.findByIdOrNull(repeatedTask.id!!))
+        assertNotNull(taskRepo.findByIdOrNull(taskSaved.id!!))
+        assertNotNull(taskRepo.findByIdOrNull(metaRepeatedTask.id!!))
+
+        // delete testing objects
+        if (taskSaved.repeatingInterval > 0) {
+            val childRepeatingTasks = taskRepo.findChildRepeatingTasks(taskSaved.id!!)
+            childRepeatingTasks.forEach {
+                taskRepo.delete(it)
+            }
+        }
+        taskRepo.deleteById(taskSaved.id!!)
+    }
+
+    @Test
     fun `deleteSubtask successful`() {
         val subtask = Subtask(
             text = "Brand new subtask",
@@ -366,5 +426,154 @@ internal class TaskServiceTest(
         assertThrows(EntityNotFoundException::class.java) {
             taskService.deleteSubtask(684684)
         }
+    }
+
+    @Test
+    fun `addTaskRepeat successful weekly`() {
+        val task = Task(
+            name = "New test mega name",
+            deadline = Instant.now(),
+            status = false,
+            difficulty = 1,
+            priority = 2,
+            repeatingInterval = RepeatingInterval.WEEKLY.ordinal,
+            parentRepeatingTask = null,
+            description = "New test mega name description"
+        )
+
+        val taskSaved = taskRepo.save(task)
+
+        val repeatedTask = taskService.addTaskRepeat(taskSaved.id!!)
+
+        assertNotEquals(taskSaved.id, repeatedTask.id)
+        assertEquals(taskSaved.name, repeatedTask.name)
+        assertEquals(taskSaved.priority, repeatedTask.priority)
+        assertEquals(taskSaved.description, repeatedTask.description)
+
+        val time = LocalDateTime.ofInstant(repeatedTask.deadline!!, ZoneId.systemDefault())
+        var timeExpected = LocalDateTime.ofInstant(task.deadline!!, ZoneId.systemDefault())
+        timeExpected = timeExpected.plusDays(7)
+
+        assertEquals(timeExpected.hour, time.hour)
+        assertEquals(timeExpected.minute, time.minute)
+        assertEquals(timeExpected.year, time.year)
+        assertEquals(timeExpected.month, time.month)
+        assertEquals(timeExpected.dayOfMonth, time.dayOfMonth)
+
+        // delete testing objects
+        if (taskSaved.repeatingInterval > 0) {
+            val childRepeatingTasks = taskRepo.findChildRepeatingTasks(taskSaved.id!!)
+            childRepeatingTasks.forEach {
+                taskRepo.delete(it)
+            }
+        }
+        taskRepo.deleteById(taskSaved.id!!)
+    }
+
+    @Test
+    fun `addTaskRepeat successful monthly`() {
+        val task = Task(
+            name = "New test mega name",
+            deadline = Instant.now(),
+            status = false,
+            difficulty = 1,
+            priority = 2,
+            repeatingInterval = RepeatingInterval.MONTHLY.ordinal,
+            parentRepeatingTask = null,
+            description = "New test mega name description"
+        )
+
+        val taskSaved = taskRepo.save(task)
+
+        val repeatedTask = taskService.addTaskRepeat(taskSaved.id!!)
+
+        assertNotEquals(taskSaved.id, repeatedTask.id)
+        assertEquals(taskSaved.name, repeatedTask.name)
+        assertEquals(taskSaved.priority, repeatedTask.priority)
+        assertEquals(taskSaved.description, repeatedTask.description)
+
+        val time = LocalDateTime.ofInstant(repeatedTask.deadline!!, ZoneId.systemDefault())
+        var timeExpected = LocalDateTime.ofInstant(task.deadline!!, ZoneId.systemDefault())
+        timeExpected = timeExpected.plusMonths(1)
+
+        assertEquals(timeExpected.hour, time.hour)
+        assertEquals(timeExpected.minute, time.minute)
+        assertEquals(timeExpected.year, time.year)
+        assertEquals(timeExpected.month, time.month)
+        assertEquals(timeExpected.dayOfMonth, time.dayOfMonth)
+
+        // delete testing objects
+        if (taskSaved.repeatingInterval > 0) {
+            val childRepeatingTasks = taskRepo.findChildRepeatingTasks(taskSaved.id!!)
+            childRepeatingTasks.forEach {
+                taskRepo.delete(it)
+            }
+        }
+        taskRepo.deleteById(taskSaved.id!!)
+    }
+
+    @Test
+    fun `addTaskRepeat task is non-repeatable`() {
+        val task = Task(
+            name = "New test mega name",
+            deadline = Instant.now(),
+            status = false,
+            difficulty = 1,
+            priority = 2,
+            repeatingInterval = RepeatingInterval.NONE.ordinal,
+            parentRepeatingTask = null,
+            description = "New test mega name description"
+        )
+
+        val taskSaved = taskRepo.save(task)
+
+        assertThrows(IllegalStateException::class.java) {
+            val repeatedTask = taskService.addTaskRepeat(taskSaved.id!!)
+        }
+
+        // delete testing objects
+        if (taskSaved.repeatingInterval > 0) {
+            val childRepeatingTasks = taskRepo.findChildRepeatingTasks(taskSaved.id!!)
+            childRepeatingTasks.forEach {
+                taskRepo.delete(it)
+            }
+        }
+        taskRepo.deleteById(taskSaved.id!!)
+    }
+
+    @Test
+    fun `addTaskRepeat task not found`() {
+        assertThrows(EntityNotFoundException::class.java) {
+            val repeatedTask = taskService.addTaskRepeat(654654555)
+        }
+    }
+
+    @Test
+    fun `addTaskRepeat deadline is null`() {
+        val task = Task(
+            name = "New test mega name",
+            deadline = null,
+            status = false,
+            difficulty = 1,
+            priority = 2,
+            repeatingInterval = RepeatingInterval.YEARLY.ordinal,
+            parentRepeatingTask = null,
+            description = "New test mega name description"
+        )
+
+        val taskSaved = taskRepo.save(task)
+
+        assertThrows(IllegalStateException::class.java) {
+            val repeatedTask = taskService.addTaskRepeat(taskSaved.id!!)
+        }
+
+        // delete testing objects
+        if (taskSaved.repeatingInterval > 0) {
+            val childRepeatingTasks = taskRepo.findChildRepeatingTasks(taskSaved.id!!)
+            childRepeatingTasks.forEach {
+                taskRepo.delete(it)
+            }
+        }
+        taskRepo.deleteById(taskSaved.id!!)
     }
 }

@@ -13,12 +13,19 @@ open class Subtask (
 
     @ManyToOne(cascade = [CascadeType.MERGE, CascadeType.REFRESH], fetch = FetchType.LAZY)
     @JoinColumn(name = "taskid", nullable = false)
-    open val parentTask: Task,
+    open var parentTask: Task,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    open val id: Int? = null
-)
+    open var id: Int? = null
+) : Cloneable {
+    public override fun clone(): Subtask = Subtask(
+        text = text,
+        status = status,
+        parentTask = parentTask,
+        id = id
+    )
+}
 
 data class SubtaskReceiveDto(
     var text: String,

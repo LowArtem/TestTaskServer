@@ -1,7 +1,8 @@
 package com.trialbot.tasktest.models.enums
 
+import com.trialbot.tasktest.utils.toLocalDateTimeUTC
 import java.time.Instant
-import java.util.Calendar
+import java.time.ZoneOffset
 
 enum class RepeatingInterval {
     NONE,
@@ -10,15 +11,9 @@ enum class RepeatingInterval {
     YEARLY
 }
 
-fun RepeatingInterval.toMillis(currentTime: Instant): Long = when (this) {
-    RepeatingInterval.NONE -> 0
-    RepeatingInterval.WEEKLY -> 7 * 24 * 60 * 60 * 1000
-    RepeatingInterval.MONTHLY -> {
-        val calendar = Calendar.Builder().setInstant(currentTime.toEpochMilli()).build()
-        calendar.getActualMaximum(Calendar.DAY_OF_MONTH) * 24 * 60 * 60 * 1000L
-    }
-    RepeatingInterval.YEARLY -> {
-        val calendar = Calendar.Builder().setInstant(currentTime.toEpochMilli()).build()
-        calendar.getActualMaximum(Calendar.DAY_OF_YEAR) * 24 * 60 * 60 * 1000L
-    }
+fun RepeatingInterval.addToDate(currentTime: Instant): Instant = when(this) {
+    RepeatingInterval.NONE -> currentTime
+    RepeatingInterval.WEEKLY -> currentTime.toLocalDateTimeUTC().plusDays(7).toInstant(ZoneOffset.UTC)
+    RepeatingInterval.MONTHLY -> currentTime.toLocalDateTimeUTC().plusMonths(1).toInstant(ZoneOffset.UTC)
+    RepeatingInterval.YEARLY -> currentTime.toLocalDateTimeUTC().plusYears(1).toInstant(ZoneOffset.UTC)
 }

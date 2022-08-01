@@ -4,23 +4,17 @@ import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.models.enums.RepeatingInterval
 import com.trialbot.tasktest.repositories.SubtaskRepository
 import com.trialbot.tasktest.repositories.TaskRepository
-import com.trialbot.tasktest.repositories.TaskUserRepository
-import com.trialbot.tasktest.repositories.UserRepository
 import com.trialbot.tasktest.utils.getUserIdFromToken
+import com.trialbot.tasktest.utils.toLocalDateTimeUTC
 import io.mockk.every
 import io.mockk.mockkStatic
-import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat
-
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.Month
-import java.time.ZoneId
-import java.util.Calendar
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
@@ -28,8 +22,6 @@ import javax.transaction.Transactional
 internal class TaskServiceTest(
     @Autowired private val taskRepo: TaskRepository,
     @Autowired private val taskService: TaskService,
-    @Autowired private val userRepo: UserRepository,
-    @Autowired private val taskUserRepository: TaskUserRepository,
     @Autowired private val subtaskRepo: SubtaskRepository
 ) {
 
@@ -450,9 +442,8 @@ internal class TaskServiceTest(
         assertEquals(taskSaved.priority, repeatedTask.priority)
         assertEquals(taskSaved.description, repeatedTask.description)
 
-        val time = LocalDateTime.ofInstant(repeatedTask.deadline!!, ZoneId.systemDefault())
-        var timeExpected = LocalDateTime.ofInstant(task.deadline!!, ZoneId.systemDefault())
-        timeExpected = timeExpected.plusDays(7)
+        val time = repeatedTask.deadline!!.toLocalDateTimeUTC()
+        val timeExpected = task.deadline!!.toLocalDateTimeUTC().plusDays(7)
 
         assertEquals(timeExpected.hour, time.hour)
         assertEquals(timeExpected.minute, time.minute)
@@ -492,9 +483,8 @@ internal class TaskServiceTest(
         assertEquals(taskSaved.priority, repeatedTask.priority)
         assertEquals(taskSaved.description, repeatedTask.description)
 
-        val time = LocalDateTime.ofInstant(repeatedTask.deadline!!, ZoneId.systemDefault())
-        var timeExpected = LocalDateTime.ofInstant(task.deadline!!, ZoneId.systemDefault())
-        timeExpected = timeExpected.plusMonths(1)
+        val time = repeatedTask.deadline!!.toLocalDateTimeUTC()
+        val timeExpected = task.deadline!!.toLocalDateTimeUTC().plusMonths(1)
 
         assertEquals(timeExpected.hour, time.hour)
         assertEquals(timeExpected.minute, time.minute)
@@ -544,7 +534,7 @@ internal class TaskServiceTest(
     @Test
     fun `addTaskRepeat task not found`() {
         assertThrows(EntityNotFoundException::class.java) {
-            val repeatedTask = taskService.addTaskRepeat(654654555)
+            taskService.addTaskRepeat(654654555)
         }
     }
 
@@ -564,7 +554,7 @@ internal class TaskServiceTest(
         val taskSaved = taskRepo.save(task)
 
         assertThrows(IllegalStateException::class.java) {
-            val repeatedTask = taskService.addTaskRepeat(taskSaved.id!!)
+            taskService.addTaskRepeat(taskSaved.id!!)
         }
 
         // delete testing objects

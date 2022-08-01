@@ -2,7 +2,7 @@ package com.trialbot.tasktest.features.crud.task
 
 import com.trialbot.tasktest.models.*
 import com.trialbot.tasktest.models.enums.RepeatingInterval
-import com.trialbot.tasktest.models.enums.toMillis
+import com.trialbot.tasktest.models.enums.addToDate
 import com.trialbot.tasktest.repositories.SubtaskRepository
 import com.trialbot.tasktest.repositories.TaskRepository
 import com.trialbot.tasktest.repositories.TaskUserRepository
@@ -11,7 +11,6 @@ import com.trialbot.tasktest.utils.getUserFromToken
 import com.trialbot.tasktest.utils.getUserIdFromToken
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.time.Instant
 import javax.persistence.EntityNotFoundException
 import javax.transaction.Transactional
 
@@ -90,9 +89,7 @@ class TaskService(
         val newTask = task.clone()
         newTask.id = null
 
-        newTask.deadline = Instant.ofEpochMilli(
-            task.deadline!!.toEpochMilli() + RepeatingInterval.values()[task.repeatingInterval].toMillis(task.deadline!!)
-        )
+        newTask.deadline = RepeatingInterval.values()[task.repeatingInterval].addToDate(task.deadline!!)
 
         if (task.parentRepeatingTask == null) {
             newTask.parentRepeatingTask = task.id

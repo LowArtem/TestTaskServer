@@ -19,7 +19,6 @@ import org.springframework.data.repository.findByIdOrNull
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.TestInstance
 import java.time.Instant
-import java.time.LocalDateTime
 import javax.persistence.EntityNotFoundException
 
 
@@ -195,12 +194,12 @@ internal class HabitServiceTest(
         assertNotNull(habitAdded)
         habitAdded?.let { habit ->
             assertNotNull(habit.id)
-            assertThat(habit.id!!).isGreaterThan(0)
+            assertThat(habit.id).isGreaterThan(0)
             assertEquals(newHabit.name, habit.name)
             assertEquals(newHabit.description, habit.description)
             assertEquals(newHabit.category, habit.category)
 
-            habitRepo.deleteById(habit.id!!)
+            habitRepo.deleteById(habit.id)
         }
     }
 

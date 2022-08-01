@@ -6,7 +6,6 @@ import com.trialbot.tasktest.repositories.DailyHabitRepository
 import com.trialbot.tasktest.repositories.UserRepository
 import com.trialbot.tasktest.utils.getUserFromToken
 import com.trialbot.tasktest.utils.getUserIdFromToken
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import javax.persistence.EntityNotFoundException

@@ -1,6 +1,8 @@
 package com.trialbot.tasktest.features.crud.dailyHabit
 
-import com.trialbot.tasktest.models.*
+import com.trialbot.tasktest.models.DailyHabitCompletionReceiveDto
+import com.trialbot.tasktest.models.DailyHabitReceiveDto
+import com.trialbot.tasktest.models.DailyHabitResponseDto
 import com.trialbot.tasktest.utils.getToken
 import io.jsonwebtoken.MalformedJwtException
 import org.springframework.http.HttpStatus

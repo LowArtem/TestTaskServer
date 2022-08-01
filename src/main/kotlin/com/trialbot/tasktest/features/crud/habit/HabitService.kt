@@ -47,7 +47,7 @@ class HabitService(
     }
 
     fun updateHabit(habit: HabitResponseDto): HabitResponseDto {
-        val habitDb = habitRepo.findByIdOrNull(habit.id ?: -1)
+        val habitDb = habitRepo.findByIdOrNull(habit.id)
             ?: throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
 
         habitDb.name = habit.name
@@ -85,6 +85,10 @@ class HabitService(
             if (habit.type != Type.NEGATIVE.ordinal && habit.type != Type.UNIVERSAL.ordinal) {
                 throw IllegalArgumentException("This completion type (positive/negative) is not allowed for this type of habit")
             }
+
+            // Add last negative activation date
+            habit.lastNegativeActivationDate = requestData.date
+            habitRepo.save(habit)
         }
 
         val habitCompletion = HabitCompletion(requestData.date, habit, requestData.rating, requestData.isPositive)

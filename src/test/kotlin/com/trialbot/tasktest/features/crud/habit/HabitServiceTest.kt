@@ -1,10 +1,12 @@
 package com.trialbot.tasktest.features.crud.habit
 
 import com.trialbot.tasktest.models.*
+import com.trialbot.tasktest.models.enums.Type
 import com.trialbot.tasktest.repositories.HabitCompletionRepository
 import com.trialbot.tasktest.repositories.HabitRepository
 import com.trialbot.tasktest.repositories.UserRepository
 import com.trialbot.tasktest.utils.getUserIdFromToken
+import com.trialbot.tasktest.utils.toLocalDateTimeUTC
 import io.jsonwebtoken.MalformedJwtException
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -354,13 +356,18 @@ internal class HabitServiceTest(
     }
 
     @Test
-    fun `addHabitCompletion successful`() {
+    fun `addHabitCompletion successful positive`() {
         val timeNow = Instant.now()
 
         var completion: HabitCompletionDto? = null
 
         assertDoesNotThrow {
-            completion = habitService.addHabitCompletion(HabitCompletionReceiveDto(newHabitId, timeNow, 5))
+            completion = habitService.addHabitCompletion(HabitCompletionReceiveDto(
+                habitId = newHabitId,
+                date = timeNow,
+                rating = 5,
+                isPositive = true
+            ))
         }
         assertNotNull(completion)
         completion?.let {
@@ -368,6 +375,50 @@ internal class HabitServiceTest(
             assertNotNull(it.id)
             assertThat(it.id!!).isGreaterThan(0)
         }
+    }
+
+    @Test
+    fun `addHabitCompletion successful negative`() {
+        val habit = Habit(
+            name = "Test negative habit",
+            category = "Health",
+            user = userRepo.findByIdOrNull(7) ?: throw EntityNotFoundException(),
+            type = Type.NEGATIVE.ordinal,
+            lastNegativeActivationDate = null,
+            description = "Test negative habit description"
+        )
+        val habitSaved = habitRepo.save(habit)
+
+        val timeNow = Instant.now()
+        var completion: HabitCompletionDto? = null
+
+        assertDoesNotThrow {
+            completion = habitService.addHabitCompletion(HabitCompletionReceiveDto(
+                habitId = habitSaved.id!!,
+                date = timeNow,
+                rating = 5,
+                isPositive = false
+            ))
+        }
+        assertNotNull(completion)
+        completion?.let {
+            assertEquals(timeNow, it.date)
+            assertNotNull(it.id)
+            assertThat(it.id!!).isGreaterThan(0)
+        }
+
+        val habitUpdated = habitRepo.findByIdOrNull(habitSaved.id!!) ?: throw EntityNotFoundException()
+
+        assertNotNull(habitUpdated.lastNegativeActivationDate)
+        assertEquals(timeNow.toLocalDateTimeUTC().dayOfMonth, habitUpdated.lastNegativeActivationDate!!.toLocalDateTimeUTC().dayOfMonth)
+        assertEquals(timeNow.toLocalDateTimeUTC().month, habitUpdated.lastNegativeActivationDate!!.toLocalDateTimeUTC().month)
+        assertEquals(timeNow.toLocalDateTimeUTC().year, habitUpdated.lastNegativeActivationDate!!.toLocalDateTimeUTC().year)
+        assertEquals(timeNow.toLocalDateTimeUTC().hour, habitUpdated.lastNegativeActivationDate!!.toLocalDateTimeUTC().hour)
+        assertEquals(timeNow.toLocalDateTimeUTC().minute, habitUpdated.lastNegativeActivationDate!!.toLocalDateTimeUTC().minute)
+        assertEquals(timeNow.toLocalDateTimeUTC().second, habitUpdated.lastNegativeActivationDate!!.toLocalDateTimeUTC().second)
+
+        habitRepo.deleteById(habitUpdated.id!!)
+        assertNull(habitRepo.findByIdOrNull(habitUpdated.id!!))
     }
 
     @Test

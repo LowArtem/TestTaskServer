@@ -154,7 +154,7 @@ class TaskService(
         return task
     }
 
-    fun updateSubtasks(subtasks: Set<SubtaskUpdateReceiveDto>, parentTask: Task): Set<SubtaskResponseDto> {
+    private fun updateSubtasks(subtasks: Set<SubtaskUpdateReceiveDto>, parentTask: Task): Set<SubtaskResponseDto> {
         return subtasks.map {subtask ->
             val subtaskDb = subtaskRepo.findByIdOrNull(subtask.id ?: -1)
             if (subtaskDb != null) {
@@ -186,11 +186,11 @@ class TaskService(
     }
 
     @Transactional
-    fun updateSubtaskStatus(subtaskId: Int, status: Boolean) {
-        if (!subtaskRepo.existsById(subtaskId))
+    fun updateSubtaskStatus(statusReceive: TaskStatusReceiveDto) {
+        if (!subtaskRepo.existsById(statusReceive.taskId))
             throw EntityNotFoundException(SUBTASK_NOT_FOUND_ERROR_MESSAGE)
 
-        val successResult = subtaskRepo.updateSubtaskSetStatusForId(status, subtaskId) == 1
+        val successResult = subtaskRepo.updateSubtaskSetStatusForId(statusReceive.status, statusReceive.taskId) == 1
         if (!successResult)
             throw UnsupportedOperationException("Cannot update this entity")
     }

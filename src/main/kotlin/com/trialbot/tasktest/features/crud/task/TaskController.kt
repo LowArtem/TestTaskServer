@@ -21,8 +21,8 @@ class TaskController(
     @GetMapping("")
     fun getTasksByUser(@RequestHeader(name="Authorization") token: String): ResponseEntity<*> {
         return perform {
-            val habits = taskService.getTasksByUser(token.getToken() ?: "")
-            ResponseEntity.ok().body(habits)
+            val tasks = taskService.getTasksByUser(token.getToken() ?: "")
+            ResponseEntity.ok().body(tasks)
         }
     }
 
@@ -40,16 +40,24 @@ class TaskController(
         @RequestBody habit: TaskReceiveDto
     ): ResponseEntity<*> {
         return perform {
-            val habitCreated = taskService.addTask(token.getToken() ?: "", habit)
-            ResponseEntity.ok().body(habitCreated)
+            val taskCreated = taskService.addTask(token.getToken() ?: "", habit)
+            ResponseEntity.ok().body(taskCreated)
+        }
+    }
+
+    @PostMapping("/add/repeat")
+    fun addTaskRepeat(@RequestBody taskId: Int): ResponseEntity<*> {
+        return perform {
+            val task = taskService.addTaskRepeat(taskId)
+            ResponseEntity.ok().body(task)
         }
     }
 
     @PutMapping("/update")
     fun updateTask(@RequestBody task: TaskUpdateReceiveDto): ResponseEntity<*> {
         return perform {
-            val habitUpdated = taskService.updateTask(task)
-            ResponseEntity.ok().body(habitUpdated)
+            val taskUpdated = taskService.updateTask(task)
+            ResponseEntity.ok().body(taskUpdated)
         }
     }
 
@@ -61,10 +69,26 @@ class TaskController(
         }
     }
 
+    @PutMapping("/update/subtask/status")
+    fun updateSubtaskStatus(@RequestBody taskStatusReceive: TaskStatusReceiveDto): ResponseEntity<*> {
+        return perform {
+            taskService.updateSubtaskStatus(taskStatusReceive)
+            ResponseEntity.ok().body("Successfully updated")
+        }
+    }
+
     @DeleteMapping("/delete")
     fun deleteTask(@RequestBody taskId: Int): ResponseEntity<*> {
         return perform {
             taskService.deleteTask(taskId)
+            ResponseEntity.ok().body("Successfully deleted")
+        }
+    }
+
+    @DeleteMapping("/delete/subtask")
+    fun deleteSubtask(@RequestBody subtaskId: Int): ResponseEntity<*> {
+        return perform {
+            taskService.deleteSubtask(subtaskId)
             ResponseEntity.ok().body("Successfully deleted")
         }
     }
@@ -80,6 +104,8 @@ class TaskController(
             ResponseEntity.status(HttpStatus.FORBIDDEN).body("Authentication failed")
         } catch (_: UnsupportedOperationException) {
             ResponseEntity.internalServerError().body("Cannot execute this operation :(")
+        } catch(e: IllegalStateException) {
+            ResponseEntity.badRequest().body("You have passed wrong data: ${e.localizedMessage}")
         } catch (e: Exception) {
             ResponseEntity.internalServerError().body("Unknown error: ${e.localizedMessage}")
         }

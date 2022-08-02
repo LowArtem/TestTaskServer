@@ -4,11 +4,9 @@ import com.trialbot.tasktest.models.DailyHabitCompletionReceiveDto
 import com.trialbot.tasktest.models.DailyHabitReceiveDto
 import com.trialbot.tasktest.models.DailyHabitResponseDto
 import com.trialbot.tasktest.utils.getToken
-import io.jsonwebtoken.MalformedJwtException
-import org.springframework.http.HttpStatus
+import com.trialbot.tasktest.utils.perform
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import javax.persistence.EntityNotFoundException
 
 
 @RestController
@@ -74,18 +72,6 @@ class DailyHabitController(
         return perform {
             dailyHabitService.deleteDailyHabitCompletion(habitCompletionId)
             ResponseEntity.ok().body("Successfully deleted")
-        }
-    }
-
-    private fun perform(operation: () -> ResponseEntity<*>): ResponseEntity<*> {
-        return try {
-            operation()
-        } catch (_: EntityNotFoundException) {
-            ResponseEntity.badRequest().body("Entity not found")
-        } catch (_: MalformedJwtException) {
-            ResponseEntity.status(HttpStatus.FORBIDDEN).body("Authentication failed")
-        } catch (e: Exception) {
-            ResponseEntity.internalServerError().body("Unknown error: ${e.localizedMessage}")
         }
     }
 }

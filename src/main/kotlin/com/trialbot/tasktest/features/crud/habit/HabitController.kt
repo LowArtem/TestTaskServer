@@ -2,7 +2,6 @@ package com.trialbot.tasktest.features.crud.habit
 
 import com.trialbot.tasktest.models.HabitCompletionReceiveDto
 import com.trialbot.tasktest.models.HabitReceiveDto
-import com.trialbot.tasktest.models.HabitResponseDto
 import com.trialbot.tasktest.models.HabitUpdateReceiveDto
 import com.trialbot.tasktest.utils.getToken
 import com.trialbot.tasktest.utils.perform
@@ -20,7 +19,7 @@ class HabitController(
     @GetMapping("")
     fun getHabitsByUser(@RequestHeader(name="Authorization") token: String): ResponseEntity<*> {
         return perform {
-            val habits = habitService.getHabitsByUser(token.getToken() ?: "")
+            val habits = habitService.getHabitsByUser(token.getToken() ?: "").sortedBy { it.id }
             ResponseEntity.ok().body(habits)
         }
     }
@@ -54,7 +53,7 @@ class HabitController(
     @GetMapping("/completions")
     fun getHabitCompletions(@RequestBody habitId: Int): ResponseEntity<*> {
         return perform {
-            val completions = habitService.getHabitCompletions(habitId)
+            val completions = habitService.getHabitCompletions(habitId).sortedBy { it.date }
             ResponseEntity.ok().body(completions)
         }
     }

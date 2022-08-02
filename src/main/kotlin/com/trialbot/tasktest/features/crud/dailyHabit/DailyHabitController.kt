@@ -19,7 +19,7 @@ class DailyHabitController(
     @GetMapping("")
     fun getDailyHabitsByUser(@RequestHeader(name="Authorization") token: String): ResponseEntity<*> {
         return perform {
-            val habits = dailyHabitService.getDailyHabitsByUser(token.getToken() ?: "")
+            val habits = dailyHabitService.getDailyHabitsByUser(token.getToken() ?: "").sortedBy { it.id }
             ResponseEntity.ok().body(habits)
         }
     }
@@ -54,7 +54,7 @@ class DailyHabitController(
     @GetMapping("/completions")
     fun getDailyHabitCompletions(@RequestBody habitId: Int): ResponseEntity<*> {
         return perform {
-            val completions = dailyHabitService.getDailyHabitCompletions(habitId)
+            val completions = dailyHabitService.getDailyHabitCompletions(habitId).sortedBy { it.date }
             ResponseEntity.ok().body(completions)
         }
     }

@@ -101,7 +101,7 @@ internal class HabitServiceTest(
         assertDoesNotThrow {
             habits = habitService.getHabitsByUser(authToken)
         }
-        assertEquals(43, habits.size)
+        assertEquals(44, habits.size)
 
         val habitIdExpected = 55
         val habitNameExpected = "Cash Manager"
@@ -133,7 +133,7 @@ internal class HabitServiceTest(
         assertDoesNotThrow {
             habits = habitService.getHabitsByUser(tokenMock)
         }
-        assertEquals(43, habits.size)
+        assertEquals(44, habits.size)
 
         val habitIdExpected = 55
         val habitNameExpected = "Cash Manager"
@@ -237,8 +237,14 @@ internal class HabitServiceTest(
         val habit = habitRepo.findByIdOrNull(newHabitId) ?: throw EntityNotFoundException()
         assertNotNull(habit)
 
-        val newHabitDto = habit.toResponseDto()
-        newHabitDto.description = "ja;slkdfaj;sga;jfglfglaa[dpof"
+        val newHabitDto = HabitUpdateReceiveDto(
+            name = habit.name,
+            category = habit.category,
+            type = habit.type,
+            description = "ja;slkdfaj;sga;jfglfglaa[dpof",
+            difficulty = habit.difficulty,
+            id = habit.id!!
+        )
 
         var habitUpdated: HabitResponseDto? = null
         assertDoesNotThrow {
@@ -257,9 +263,14 @@ internal class HabitServiceTest(
         val habit = habitRepo.findByIdOrNull(newHabitId) ?: throw EntityNotFoundException()
         assertNotNull(habit)
 
-        val newHabitDto = habit.toResponseDto()
-        newHabitDto.description = "ja;slkdfaj;sga;jfglfglaa[dpof"
-        val habitDto = newHabitDto.copy(id = 827364)
+        val habitDto = HabitUpdateReceiveDto(
+            name = habit.name,
+            category = habit.category,
+            type = habit.type,
+            description = "ja;slkdfaj;sga;jfglfglaa[dpof",
+            difficulty = habit.difficulty,
+            id = 827364
+        )
 
         var habitUpdated: HabitResponseDto? = null
         assertThrows(EntityNotFoundException::class.java) {

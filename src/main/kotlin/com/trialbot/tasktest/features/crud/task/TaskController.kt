@@ -19,7 +19,23 @@ class TaskController(
     @GetMapping("")
     fun getTasksByUser(@RequestHeader(name="Authorization") token: String): ResponseEntity<*> {
         return perform {
-            val tasks = taskService.getTasksByUser(token.getToken() ?: "")
+            val tasks = taskService.getTasksByUser(token.getToken() ?: "").sortedBy { it.id }
+            ResponseEntity.ok().body(tasks)
+        }
+    }
+
+    @GetMapping("/completed")
+    fun getCompletedTasksByUser(@RequestHeader(name="Authorization") token: String): ResponseEntity<*> {
+        return perform {
+            val tasks = taskService.getCompletedTasksByUser(token.getToken() ?: "")
+            ResponseEntity.ok().body(tasks)
+        }
+    }
+
+    @GetMapping("/uncompleted")
+    fun getUncompletedTasksByUser(@RequestHeader(name="Authorization") token: String): ResponseEntity<*> {
+        return perform {
+            val tasks = taskService.getUncompletedTasksByUser(token.getToken() ?: "").sortedBy { it.id }
             ResponseEntity.ok().body(tasks)
         }
     }

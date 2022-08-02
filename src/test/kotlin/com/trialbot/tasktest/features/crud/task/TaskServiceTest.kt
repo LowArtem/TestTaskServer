@@ -91,6 +91,42 @@ internal class TaskServiceTest(
     }
 
     @Test
+    fun `getCompletedTasksByUser successful`() {
+        var tasks: List<TaskShortResponseDto> = listOf()
+
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "2"
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns 7
+
+        assertDoesNotThrow {
+            tasks = taskService.getCompletedTasksByUser(tokenMock)
+        }
+
+        assertTrue(tasks.all { it.status })
+    }
+
+    @Test
+    fun `getUncompletedTasksByUser successful`() {
+        var tasks: List<TaskShortResponseDto> = listOf()
+
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "2"
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns 7
+
+        assertDoesNotThrow {
+            tasks = taskService.getUncompletedTasksByUser(tokenMock)
+        }
+
+        assertTrue(tasks.all { !it.status })
+    }
+
+    @Test
     fun `addTask successful`() {
         val timeNow = Instant.now()
 
@@ -121,7 +157,7 @@ internal class TaskServiceTest(
         assertEquals(taskToAdd.description, taskAdded!!.description)
         assertEquals(taskToAdd.deadline, timeNow)
 
-        val tasksByThisUser: List<Task> = taskRepo.findByUsers_Id_UserId(4)
+        val tasksByThisUser: List<Task> = taskRepo.findByUser(4)
         val currentTaskDb = taskRepo.findByIdOrNull(taskAdded!!.id!!) ?: throw EntityNotFoundException()
 
         assertThat(tasksByThisUser).contains(currentTaskDb)
@@ -173,7 +209,7 @@ internal class TaskServiceTest(
         assertEquals(taskToAdd.description, taskAdded!!.description)
         assertEquals(taskToAdd.deadline, timeNow)
 
-        val tasksByThisUser: List<Task> = taskRepo.findByUsers_Id_UserId(4)
+        val tasksByThisUser: List<Task> = taskRepo.findByUser(4)
         val currentTaskDb = taskRepo.findByIdOrNull(taskAdded!!.id!!) ?: throw EntityNotFoundException()
 
         assertThat(tasksByThisUser).contains(currentTaskDb)

@@ -14,7 +14,10 @@ interface TaskUserRepository : CrudRepository<TaskUser, TaskUserKey> {
 interface TaskRepository : CrudRepository<Task, Int> {
 
     @Query("select t from Task t inner join t.taskUsers users where users.id.userId = ?1")
-    fun findByUsers_Id_UserId(userId: Int): List<Task>
+    fun findByUser(userId: Int): List<Task>
+
+    @Query("select t from Task t inner join t.taskUsers users where users.id.userId = ?1 and t.status = ?2 order by users.date desc")
+    fun findByUserAndStatusSortedByDateDesc(userId: Int, status: Boolean): List<Task>
 
     @Modifying(clearAutomatically = true)
     @Query("update tasks set status = ?1 where id = ?2", nativeQuery = true)

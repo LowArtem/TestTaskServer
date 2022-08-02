@@ -29,7 +29,29 @@ class TaskService(
         if (!userRepo.existsUserById(userId))
             throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
-        val tasks = taskRepo.findByUsers_Id_UserId(userId)
+        val tasks = taskRepo.findByUser(userId)
+        return tasks.map { it.toShortResponseDto() }
+    }
+
+    fun getCompletedTasksByUser(token: String): List<TaskShortResponseDto> {
+        val userId = token.getUserIdFromToken()
+            ?: throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+
+        if (!userRepo.existsUserById(userId))
+            throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+
+        val tasks = taskRepo.findByUserAndStatusSortedByDateDesc(userId, true)
+        return tasks.map { it.toShortResponseDto() }
+    }
+
+    fun getUncompletedTasksByUser(token: String): List<TaskShortResponseDto> {
+        val userId = token.getUserIdFromToken()
+            ?: throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+
+        if (!userRepo.existsUserById(userId))
+            throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
+
+        val tasks = taskRepo.findByUserAndStatusSortedByDateDesc(userId, false)
         return tasks.map { it.toShortResponseDto() }
     }
 

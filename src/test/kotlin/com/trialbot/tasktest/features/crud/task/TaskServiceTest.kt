@@ -298,7 +298,7 @@ internal class TaskServiceTest(
         taskDb.status = !taskDb.status
 
         assertDoesNotThrow {
-            taskService.updateSubtaskStatus(subtaskId, taskDb.status)
+            taskService.updateSubtaskStatus(TaskStatusReceiveDto(subtaskId, taskDb.status))
         }
 
         val taskDbAfter = subtaskRepo.findByIdOrNull(subtaskId)?.toUpdateReceiveDto()
@@ -310,7 +310,7 @@ internal class TaskServiceTest(
     @Test
     fun `updateSubtaskStatus subtask not found`() {
         assertThrows(EntityNotFoundException::class.java) {
-            taskService.updateSubtaskStatus(684684, true)
+            taskService.updateSubtaskStatus(TaskStatusReceiveDto(684684, true))
         }
     }
 

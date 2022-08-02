@@ -20,7 +20,7 @@ object JwtUtils {
         val userPrincipal: UserSecurityDetails = authentication.principal as UserSecurityDetails
         return Jwts.builder()
             .setClaims(mutableMapOf<String, Any>("userId" to (userPrincipal.user.id ?: -1)))
-            .setSubject(userPrincipal.username)
+            .setSubject(userPrincipal.getEmail())
             .setIssuedAt(Date())
             .setExpiration(Date(Date().time + expirationMs))
             .signWith(SignatureAlgorithm.HS512, jwtSecret).compact()

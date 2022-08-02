@@ -12,6 +12,8 @@ class UserSecurityDetails(val user: UserDto) : UserDetails {
 
     override fun getUsername(): String = user.username
 
+    fun getEmail(): String = user.email
+
     override fun isAccountNonExpired(): Boolean = true
 
     override fun isAccountNonLocked(): Boolean = true

@@ -77,8 +77,8 @@ class UserAuthService(
     fun getById(id: Int): UserDto? = userRepo.findByIdOrNull(id)?.toDto()
 
     /**
-     * Actually loads user by email
-     * P.S. really weird name for overridable function that can be use in different cases
+     * Actually loads user by email.
+     * P.S. Really weird name for overridable function that can be used in different cases
      */
     override fun loadUserByUsername(email: String?): UserDetails {
         if (email == null) throw UsernameNotFoundException("Email is null")

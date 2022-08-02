@@ -19,15 +19,23 @@ class TaskController(
 ) {
 
     @GetMapping("")
-    fun getHabitsByUser(@RequestHeader(name="Authorization") token: String): ResponseEntity<*> {
+    fun getTasksByUser(@RequestHeader(name="Authorization") token: String): ResponseEntity<*> {
         return perform {
             val habits = taskService.getTasksByUser(token.getToken() ?: "")
             ResponseEntity.ok().body(habits)
         }
     }
 
+    @GetMapping("/{id}")
+    fun getTask(@PathVariable id: Int): ResponseEntity<*> {
+        return perform {
+            val task = taskService.getTask(id)
+            ResponseEntity.ok().body(task)
+        }
+    }
+
     @PostMapping("/add")
-    fun addHabit(
+    fun addTask(
         @RequestHeader(name="Authorization") token: String,
         @RequestBody habit: TaskReceiveDto
     ): ResponseEntity<*> {
@@ -38,7 +46,7 @@ class TaskController(
     }
 
     @PutMapping("/update")
-    fun updateHabit(@RequestBody task: TaskUpdateReceiveDto): ResponseEntity<*> {
+    fun updateTask(@RequestBody task: TaskUpdateReceiveDto): ResponseEntity<*> {
         return perform {
             val habitUpdated = taskService.updateTask(task)
             ResponseEntity.ok().body(habitUpdated)
@@ -54,7 +62,7 @@ class TaskController(
     }
 
     @DeleteMapping("/delete")
-    fun deleteHabit(@RequestBody taskId: Int): ResponseEntity<*> {
+    fun deleteTask(@RequestBody taskId: Int): ResponseEntity<*> {
         return perform {
             taskService.deleteTask(taskId)
             ResponseEntity.ok().body("Successfully deleted")

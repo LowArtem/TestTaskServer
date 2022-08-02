@@ -22,8 +22,7 @@ class TaskService(
     private val subtaskRepo: SubtaskRepository,
 ) {
 
-    @Transactional
-    fun getTasksByUser(token: String): List<TaskResponseDto> {
+    fun getTasksByUser(token: String): List<TaskShortResponseDto> {
         val userId = token.getUserIdFromToken()
             ?: throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
@@ -31,7 +30,15 @@ class TaskService(
             throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
         val tasks = taskRepo.findByUsers_Id_UserId(userId)
-        return tasks.map { it.toResponseDto() }
+        return tasks.map { it.toShortResponseDto() }
+    }
+
+    @Transactional
+    fun getTask(taskId: Int): TaskResponseDto {
+        val task = taskRepo.findByIdOrNull(taskId)
+            ?: throw EntityNotFoundException(TASK_NOT_FOUND_ERROR_MESSAGE)
+
+        return task.toResponseDto()
     }
 
     @Transactional

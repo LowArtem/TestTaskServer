@@ -27,7 +27,7 @@ internal class TaskServiceTest(
 
     @Test
     fun `getTasksByUser successful`() {
-        var tasks: List<TaskResponseDto> = listOf()
+        var tasks: List<TaskShortResponseDto> = listOf()
 
         mockkStatic(String::getUserIdFromToken)
 
@@ -45,25 +45,20 @@ internal class TaskServiceTest(
     @Test
     @Transactional
     fun `getTask with subtasks successful`() {
-        var tasks: List<TaskResponseDto> = listOf()
+        var task: TaskResponseDto? = null
 
-        mockkStatic(String::getUserIdFromToken)
-
-        val tokenMock = "1821" // user with subtasks
-        every {
-            tokenMock.getUserIdFromToken()
-        } returns 1821
+        val taskId = 4
 
         assertDoesNotThrow {
-            tasks = taskService.getTasksByUser(tokenMock)
+            task = taskService.getTask(taskId)
         }
-        assertThat(tasks).isNotEmpty
-        assertTrue(tasks.any { it.subtasks.isNotEmpty() })
+        assertNotNull(task)
+        assertTrue(task!!.subtasks.isNotEmpty())
     }
 
     @Test
     fun `getTasksByUser user not found`() {
-        var tasks: List<TaskResponseDto> = listOf()
+        var tasks: List<TaskShortResponseDto> = listOf()
 
         mockkStatic(String::getUserIdFromToken)
 
@@ -80,7 +75,7 @@ internal class TaskServiceTest(
 
     @Test
     fun `getTasksByUser tasks are empty`() {
-        var tasks: List<TaskResponseDto> = listOf()
+        var tasks: List<TaskShortResponseDto> = listOf()
 
         mockkStatic(String::getUserIdFromToken)
 

@@ -131,6 +131,16 @@ data class TaskResponseDto(
     var subtasks: Set<SubtaskResponseDto> = setOf()
 )
 
+data class TaskShortResponseDto(
+    var name: String,
+    var deadline: Instant?,
+    var status: Boolean,
+    var difficulty: Int,
+    var priority: Int,
+    var hasNotification: Boolean,
+    val id: Int,
+)
+
 data class TaskUpdateReceiveDto(
     var name: String,
     var deadline: Instant?,
@@ -160,6 +170,16 @@ fun Task.toResponseDto(): TaskResponseDto = TaskResponseDto(
     notification = notification,
     id = id,
     subtasks = subtasks.map { it.toResponseDto() }.toSet()
+)
+
+fun Task.toShortResponseDto(): TaskShortResponseDto = TaskShortResponseDto(
+    name = name,
+    deadline = deadline,
+    status = status,
+    difficulty = difficulty,
+    priority = priority,
+    hasNotification = notification != null,
+    id = id ?: -1
 )
 
 fun Task.toUpdateReceiveDto(): TaskUpdateReceiveDto = TaskUpdateReceiveDto(

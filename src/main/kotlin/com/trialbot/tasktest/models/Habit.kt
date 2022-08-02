@@ -47,6 +47,15 @@ data class HabitReceiveDto(
     val difficulty: Int = Difficulty.NORMAL.ordinal,
 )
 
+data class HabitUpdateReceiveDto(
+    val name: String,
+    val category: String,
+    val type: Int,
+    val description: String?,
+    val difficulty: Int,
+    val id: Int
+)
+
 data class HabitResponseDto(
     var name: String,
     var category: String,

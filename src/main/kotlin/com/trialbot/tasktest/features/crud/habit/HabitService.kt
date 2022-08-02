@@ -46,7 +46,7 @@ class HabitService(
         return habitRepo.save(habitDb).toResponseDto()
     }
 
-    fun updateHabit(habit: HabitResponseDto): HabitResponseDto {
+    fun updateHabit(habit: HabitUpdateReceiveDto): HabitResponseDto {
         val habitDb = habitRepo.findByIdOrNull(habit.id)
             ?: throw EntityNotFoundException(HABIT_NOT_FOUND_ERROR_MESSAGE)
 

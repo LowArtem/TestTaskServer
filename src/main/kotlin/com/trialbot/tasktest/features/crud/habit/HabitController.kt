@@ -3,6 +3,7 @@ package com.trialbot.tasktest.features.crud.habit
 import com.trialbot.tasktest.models.HabitCompletionReceiveDto
 import com.trialbot.tasktest.models.HabitReceiveDto
 import com.trialbot.tasktest.models.HabitResponseDto
+import com.trialbot.tasktest.models.HabitUpdateReceiveDto
 import com.trialbot.tasktest.utils.getToken
 import com.trialbot.tasktest.utils.perform
 import org.springframework.http.ResponseEntity
@@ -35,7 +36,7 @@ class HabitController(
     }
 
     @PutMapping("/update")
-    fun updateHabit(@RequestBody habit: HabitResponseDto): ResponseEntity<*> {
+    fun updateHabit(@RequestBody habit: HabitUpdateReceiveDto): ResponseEntity<*> {
         return perform {
             val habitUpdated = habitService.updateHabit(habit)
             ResponseEntity.ok().body(habitUpdated)

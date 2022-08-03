@@ -26,8 +26,9 @@ class HabitController(
 
     @PostMapping("/add")
     fun addHabit(
-        @RequestHeader(name="Authorization") token: String,
-        @RequestBody habit: HabitReceiveDto): ResponseEntity<*> {
+        @RequestHeader(name = "Authorization") token: String,
+        @RequestBody habit: HabitReceiveDto
+    ): ResponseEntity<*> {
         return perform {
             val habitCreated = habitService.addHabit(token.getToken() ?: "", habit)
             ResponseEntity.ok().body(habitCreated)
@@ -42,18 +43,18 @@ class HabitController(
         }
     }
 
-    @DeleteMapping("/delete")
-    fun deleteHabit(@RequestBody habitId: Int): ResponseEntity<*> {
+    @DeleteMapping("/delete/{id}")
+    fun deleteHabit(@PathVariable id: Int): ResponseEntity<*> {
         return perform {
-            habitService.deleteHabit(habitId)
+            habitService.deleteHabit(id)
             ResponseEntity.ok().body("Successfully deleted")
         }
     }
 
-    @GetMapping("/completions")
-    fun getHabitCompletions(@RequestBody habitId: Int): ResponseEntity<*> {
+    @GetMapping("/completions/{habit_id}")
+    fun getHabitCompletions(@PathVariable habit_id: Int): ResponseEntity<*> {
         return perform {
-            val completions = habitService.getHabitCompletions(habitId).sortedBy { it.date }
+            val completions = habitService.getHabitCompletions(habit_id).sortedBy { it.date }
             ResponseEntity.ok().body(completions)
         }
     }
@@ -66,10 +67,10 @@ class HabitController(
         }
     }
 
-    @DeleteMapping("/completions/delete")
-    fun deleteHabitCompletion(@RequestBody habitCompletionId: Int): ResponseEntity<*> {
+    @DeleteMapping("/completions/delete/{id}")
+    fun deleteHabitCompletion(@PathVariable id: Int): ResponseEntity<*> {
         return perform {
-            habitService.deleteHabitCompletion(habitCompletionId)
+            habitService.deleteHabitCompletion(id)
             ResponseEntity.ok().body("Successfully deleted")
         }
     }

@@ -43,18 +43,18 @@ class DailyHabitController(
         }
     }
 
-    @DeleteMapping("/delete")
-    fun deleteDailyHabit(@RequestBody habitId: Int): ResponseEntity<*> {
+    @DeleteMapping("/delete/{id}")
+    fun deleteDailyHabit(@PathVariable id: Int): ResponseEntity<*> {
         return perform {
-            dailyHabitService.deleteDailyHabit(habitId)
+            dailyHabitService.deleteDailyHabit(id)
             ResponseEntity.ok().body("Successfully deleted")
         }
     }
 
-    @GetMapping("/completions")
-    fun getDailyHabitCompletions(@RequestBody habitId: Int): ResponseEntity<*> {
+    @GetMapping("/completions/{id}")
+    fun getDailyHabitCompletions(@PathVariable id: Int): ResponseEntity<*> {
         return perform {
-            val completions = dailyHabitService.getDailyHabitCompletions(habitId).sortedBy { it.date }
+            val completions = dailyHabitService.getDailyHabitCompletions(id).sortedBy { it.date }
             ResponseEntity.ok().body(completions)
         }
     }
@@ -67,10 +67,10 @@ class DailyHabitController(
         }
     }
 
-    @DeleteMapping("/completions/delete")
-    fun deleteDailyHabitCompletion(@RequestBody habitCompletionId: Int): ResponseEntity<*> {
+    @DeleteMapping("/completions/delete/{id}")
+    fun deleteDailyHabitCompletion(@PathVariable id: Int): ResponseEntity<*> {
         return perform {
-            dailyHabitService.deleteDailyHabitCompletion(habitCompletionId)
+            dailyHabitService.deleteDailyHabitCompletion(id)
             ResponseEntity.ok().body("Successfully deleted")
         }
     }

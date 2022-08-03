@@ -59,10 +59,10 @@ class TaskController(
         }
     }
 
-    @PostMapping("/add/repeat")
-    fun addTaskRepeat(@RequestBody taskId: Int): ResponseEntity<*> {
+    @PostMapping("/add/repeat/{task_id}")
+    fun addTaskRepeat(@PathVariable task_id: Int): ResponseEntity<*> {
         return perform {
-            val task = taskService.addTaskRepeat(taskId)
+            val task = taskService.addTaskRepeat(task_id)
             ResponseEntity.ok().body(task)
         }
     }
@@ -91,18 +91,18 @@ class TaskController(
         }
     }
 
-    @DeleteMapping("/delete")
-    fun deleteTask(@RequestBody taskId: Int): ResponseEntity<*> {
+    @DeleteMapping("/delete/{id}")
+    fun deleteTask(@PathVariable id: Int): ResponseEntity<*> {
         return perform {
-            taskService.deleteTask(taskId)
+            taskService.deleteTask(id)
             ResponseEntity.ok().body("Successfully deleted")
         }
     }
 
-    @DeleteMapping("/delete/subtask")
-    fun deleteSubtask(@RequestBody subtaskId: Int): ResponseEntity<*> {
+    @DeleteMapping("/delete/subtask/{id}")
+    fun deleteSubtask(@PathVariable id: Int): ResponseEntity<*> {
         return perform {
-            taskService.deleteSubtask(subtaskId)
+            taskService.deleteSubtask(id)
             ResponseEntity.ok().body("Successfully deleted")
         }
     }

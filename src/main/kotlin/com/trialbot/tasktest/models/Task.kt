@@ -138,6 +138,7 @@ data class TaskShortResponseDto(
     var difficulty: Int,
     var priority: Int,
     var hasNotification: Boolean,
+    var hasRepeat: Boolean,
     val id: Int,
 )
 
@@ -179,6 +180,7 @@ fun Task.toShortResponseDto(): TaskShortResponseDto = TaskShortResponseDto(
     difficulty = difficulty,
     priority = priority,
     hasNotification = notification != null,
+    hasRepeat = repeatingInterval != RepeatingInterval.NONE.ordinal,
     id = id ?: -1
 )
 

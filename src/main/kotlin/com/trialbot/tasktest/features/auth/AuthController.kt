@@ -3,6 +3,7 @@ package com.trialbot.tasktest.features.auth
 import com.trialbot.tasktest.models.UserLoginRequest
 import com.trialbot.tasktest.models.UserLoginResponse
 import com.trialbot.tasktest.models.UserRegisterRequest
+import com.trialbot.tasktest.utils.StringResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.web.bind.annotation.*
@@ -25,13 +26,13 @@ class AuthController(
     }
 
     @PostMapping("/register")
-    fun addUser(@RequestBody registerRequest: UserRegisterRequest): ResponseEntity<String> {
+    fun addUser(@RequestBody registerRequest: UserRegisterRequest): ResponseEntity<StringResponse> {
         val result = userAuthService.register(registerRequest)
 
         return if (result) {
-            ResponseEntity.ok().body("User has been successfully registered")
+            ResponseEntity.ok().body(StringResponse("User has been successfully registered"))
         } else {
-            ResponseEntity.badRequest().body("This username already exists")
+            ResponseEntity.badRequest().body(StringResponse("This username already exists"))
         }
     }
 }

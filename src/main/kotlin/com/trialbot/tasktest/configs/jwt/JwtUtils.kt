@@ -13,7 +13,7 @@ import java.util.*
 object JwtUtils {
 
     private const val expirationMs: Long = 2629800000
-    private const val jwtSecret: String = """I think you know. I think you know that I'm not one for letting go. It goes to show. Sometimes the ones we love, we tend to hurt the most"""
+    private val jwtSecret: String = System.getenv("JWT_SECRET")
 
 
     fun generateJwtToken(authentication: Authentication): String {

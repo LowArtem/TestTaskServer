@@ -12,6 +12,10 @@ group = "com.trialbot"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+springBoot {
+    mainClass.set("com.trialbot.tasktest.TaskTestApplication")
+}
+
 repositories {
     mavenCentral()
 }

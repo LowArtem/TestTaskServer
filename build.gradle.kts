@@ -12,18 +12,15 @@ group = "com.trialbot"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-springBoot {
-    mainClass.set("com.trialbot.tasktest.TaskTestApplication")
-}
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc:2.7.0")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc:2.7.2")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-loader:2.7.2")
 
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("io.jsonwebtoken:jjwt:0.9.1")

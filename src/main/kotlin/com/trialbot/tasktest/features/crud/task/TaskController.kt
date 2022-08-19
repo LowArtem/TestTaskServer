@@ -81,7 +81,7 @@ class TaskController(
         @RequestBody taskStatusReceive: TaskStatusReceiveDto
     ): ResponseEntity<*> {
         return perform {
-            taskService.updateTaskStatus(taskStatusReceive.taskId, taskStatusReceive.status, token)
+            taskService.updateTaskStatus(taskStatusReceive.taskId, taskStatusReceive.status, token.getToken() ?: "")
             ResponseEntity.ok().body("Successfully updated")
         }
     }

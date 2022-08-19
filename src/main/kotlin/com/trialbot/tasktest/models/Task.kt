@@ -127,6 +127,7 @@ data class TaskResponseDto(
     var description: String?,
     var repeatingInterval: Int = RepeatingInterval.NONE.ordinal,
     var notification: Instant? = null,
+    var completionDate: Instant?,
     val id: Int? = null,
     var subtasks: Set<SubtaskResponseDto> = setOf()
 )
@@ -139,6 +140,7 @@ data class TaskShortResponseDto(
     var priority: Int,
     var hasNotification: Boolean,
     var hasRepeat: Boolean,
+    var completionDate: Instant?,
     val id: Int,
 )
 
@@ -160,7 +162,7 @@ data class TaskStatusReceiveDto(
     val status: Boolean
 )
 
-fun Task.toResponseDto(): TaskResponseDto = TaskResponseDto(
+fun Task.toResponseDto(userId: Int?): TaskResponseDto = TaskResponseDto(
     name = name,
     deadline = deadline,
     status = status,
@@ -169,11 +171,12 @@ fun Task.toResponseDto(): TaskResponseDto = TaskResponseDto(
     description = description,
     repeatingInterval = repeatingInterval,
     notification = notification,
+    completionDate = if (userId == null) null else taskUsers.firstOrNull { it.id.userId == userId }?.date,
     id = id,
     subtasks = subtasks.map { it.toResponseDto() }.toSet()
 )
 
-fun Task.toShortResponseDto(): TaskShortResponseDto = TaskShortResponseDto(
+fun Task.toShortResponseDto(userId: Int?): TaskShortResponseDto = TaskShortResponseDto(
     name = name,
     deadline = deadline,
     status = status,
@@ -181,6 +184,7 @@ fun Task.toShortResponseDto(): TaskShortResponseDto = TaskShortResponseDto(
     priority = priority,
     hasNotification = notification != null,
     hasRepeat = repeatingInterval != RepeatingInterval.NONE.ordinal,
+    completionDate = if (userId == null) null else taskUsers.firstOrNull { it.id.userId == userId }?.date,
     id = id ?: -1
 )
 

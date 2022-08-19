@@ -7,6 +7,7 @@ import com.trialbot.tasktest.repositories.SubtaskRepository
 import com.trialbot.tasktest.repositories.TaskRepository
 import com.trialbot.tasktest.repositories.TaskUserRepository
 import com.trialbot.tasktest.repositories.UserRepository
+import com.trialbot.tasktest.utils.CurrentDateTimeProvider
 import com.trialbot.tasktest.utils.getUserFromToken
 import com.trialbot.tasktest.utils.getUserIdFromToken
 import org.springframework.data.repository.findByIdOrNull
@@ -20,8 +21,10 @@ class TaskService(
     private val taskUserRepository: TaskUserRepository,
     private val userRepo: UserRepository,
     private val subtaskRepo: SubtaskRepository,
+    private val currentDateTimeProvider: CurrentDateTimeProvider
 ) {
 
+    @Transactional
     fun getTasksByUser(token: String): List<TaskShortResponseDto> {
         val userId = token.getUserIdFromToken()
             ?: throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
@@ -30,9 +33,10 @@ class TaskService(
             throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
         val tasks = taskRepo.findByUser(userId)
-        return tasks.map { it.toShortResponseDto() }
+        return tasks.map { it.toShortResponseDto(userId) }
     }
 
+    @Transactional
     fun getCompletedTasksByUser(token: String): List<TaskShortResponseDto> {
         val userId = token.getUserIdFromToken()
             ?: throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
@@ -41,9 +45,10 @@ class TaskService(
             throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
         val tasks = taskRepo.findByUserAndStatusSortedByDateDesc(userId, true)
-        return tasks.map { it.toShortResponseDto() }
+        return tasks.map { it.toShortResponseDto(userId) }
     }
 
+    @Transactional
     fun getUncompletedTasksByUser(token: String): List<TaskShortResponseDto> {
         val userId = token.getUserIdFromToken()
             ?: throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
@@ -52,7 +57,7 @@ class TaskService(
             throw EntityNotFoundException(USER_NOT_FOUND_ERROR_MESSAGE)
 
         val tasks = taskRepo.findByUserAndStatusSortedByDateDesc(userId, false)
-        return tasks.map { it.toShortResponseDto() }
+        return tasks.map { it.toShortResponseDto(userId) }
     }
 
     @Transactional
@@ -60,7 +65,7 @@ class TaskService(
         val task = taskRepo.findByIdOrNull(taskId)
             ?: throw EntityNotFoundException(TASK_NOT_FOUND_ERROR_MESSAGE)
 
-        return task.toResponseDto()
+        return task.toResponseDto(null)
     }
 
     @Transactional
@@ -87,7 +92,7 @@ class TaskService(
         )
 
         taskUserRepository.save(taskToUser)
-        val taskReturnable = taskRepo.findByIdOrNull(taskSaved.id!!)!!.toResponseDto()
+        val taskReturnable = taskRepo.findByIdOrNull(taskSaved.id!!)!!.toResponseDto(null)
         taskReturnable.subtasks = addSubtasks(taskReceive.subtasks, taskSaved)
 
         return taskReturnable
@@ -150,7 +155,7 @@ class TaskService(
         }
 
 
-        return taskRepo.save(newTask).toResponseDto()
+        return taskRepo.save(newTask).toResponseDto(null)
     }
 
     @Transactional
@@ -167,7 +172,7 @@ class TaskService(
         taskDb.repeatingInterval = taskReceive.repeatingInterval
         taskDb.notification = taskReceive.notification
 
-        val task = taskRepo.save(taskDb).toResponseDto()
+        val task = taskRepo.save(taskDb).toResponseDto(null)
 
         if (taskReceive.subtasks != taskDb.subtasks.map { it.toResponseDto() }) {
             task.subtasks = updateSubtasks(taskReceive.subtasks, taskDb)
@@ -202,7 +207,11 @@ class TaskService(
         if (!taskRepo.existsById(taskId))
             throw EntityNotFoundException(TASK_NOT_FOUND_ERROR_MESSAGE)
 
-        val successResult = taskRepo.updateTaskSetStatusForId(status, taskId) == 1
+        val result1 = taskRepo.updateTaskSetStatusForId(status, taskId)
+        val result2 = taskRepo.updateTaskSetTaskCompletionDate(currentDateTimeProvider.getCurrentDateTime(), taskId)
+
+        val successResult = result1 == result2 && result1 == 1
+
         if (!successResult)
             throw UnsupportedOperationException("Cannot update this entity")
     }

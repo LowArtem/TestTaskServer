@@ -301,8 +301,9 @@ internal class TaskServiceTest(
     @Transactional
     fun `updateTaskStatus successful`() {
         val taskId = 30
+        val userId = 4325
 
-        val taskDb = taskRepo.findByIdOrNull(taskId)?.toResponseDto()
+        val taskDb = taskRepo.findByIdOrNull(taskId)?.toResponseDto(userId)
             ?: throw EntityNotFoundException()
 
         taskDb.status = !taskDb.status
@@ -311,10 +312,16 @@ internal class TaskServiceTest(
             taskService.updateTaskStatus(taskId, taskDb.status)
         }
 
-        val taskDbAfter = taskRepo.findByIdOrNull(taskId)?.toResponseDto()
+        val taskDbAfter = taskRepo.findByIdOrNull(taskId)?.toResponseDto(userId)
             ?: throw EntityNotFoundException()
 
-        assertEquals(taskDb, taskDbAfter)
+        assertEquals(taskDb.name, taskDbAfter.name)
+        assertEquals(taskDb.status, taskDbAfter.status)
+        assertEquals(taskDb.description, taskDbAfter.description)
+        assertEquals(taskDb.subtasks, taskDbAfter.subtasks)
+        assertEquals(taskDb.deadline, taskDbAfter.deadline)
+        assertEquals(Instant.now().toLocalDateTimeUTC().dayOfMonth, taskDbAfter.completionDate?.toLocalDateTimeUTC()?.dayOfMonth)
+        assertEquals(Instant.now().toLocalDateTimeUTC().hour, taskDbAfter.completionDate?.toLocalDateTimeUTC()?.hour)
     }
 
     @Test
@@ -549,7 +556,7 @@ internal class TaskServiceTest(
         val taskSaved = taskRepo.save(task)
 
         assertThrows(IllegalStateException::class.java) {
-            val repeatedTask = taskService.addTaskRepeat(taskSaved.id!!)
+            taskService.addTaskRepeat(taskSaved.id!!)
         }
 
         // delete testing objects

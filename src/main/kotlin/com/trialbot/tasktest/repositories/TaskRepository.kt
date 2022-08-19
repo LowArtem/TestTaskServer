@@ -25,8 +25,8 @@ interface TaskRepository : CrudRepository<Task, Int> {
     fun updateTaskSetStatusForId(status: Boolean, id: Int): Int
 
     @Modifying(clearAutomatically = true)
-    @Query("update task_to_user set date = ?1 where taskid = ?2", nativeQuery = true)
-    fun updateTaskSetTaskCompletionDate(date: Instant, taskId: Int): Int
+    @Query("update task_to_user set date = ?1 where taskid = ?2 and userid = ?3", nativeQuery = true)
+    fun updateTaskSetTaskCompletionDate(date: Instant, taskId: Int, userId: Int): Int
 
     @Query("select * from tasks where parentrepeatingtaskid = ?1", nativeQuery = true)
     fun findChildRepeatingTasks(parentTaskId: Int): List<Task>

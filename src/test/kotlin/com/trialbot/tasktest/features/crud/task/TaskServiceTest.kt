@@ -303,13 +303,20 @@ internal class TaskServiceTest(
         val taskId = 30
         val userId = 4325
 
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "userId"
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns userId
+
         val taskDb = taskRepo.findByIdOrNull(taskId)?.toResponseDto(userId)
             ?: throw EntityNotFoundException()
 
         taskDb.status = !taskDb.status
 
         assertDoesNotThrow {
-            taskService.updateTaskStatus(taskId, taskDb.status)
+            taskService.updateTaskStatus(taskId, taskDb.status, tokenMock)
         }
 
         val taskDbAfter = taskRepo.findByIdOrNull(taskId)?.toResponseDto(userId)
@@ -326,8 +333,16 @@ internal class TaskServiceTest(
 
     @Test
     fun `updateTaskStatus task not found`() {
+
+        mockkStatic(String::getUserIdFromToken)
+
+        val tokenMock = "userId"
+        every {
+            tokenMock.getUserIdFromToken()
+        } returns 30
+
         assertThrows(EntityNotFoundException::class.java) {
-            taskService.updateTaskStatus(684684, true)
+            taskService.updateTaskStatus(684684, true, tokenMock)
         }
     }
 

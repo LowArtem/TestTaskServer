@@ -76,9 +76,12 @@ class TaskController(
     }
 
     @PutMapping("/update/status")
-    fun updateTaskStatus(@RequestBody taskStatusReceive: TaskStatusReceiveDto): ResponseEntity<*> {
+    fun updateTaskStatus(
+        @RequestHeader(name = "Authorization") token: String,
+        @RequestBody taskStatusReceive: TaskStatusReceiveDto
+    ): ResponseEntity<*> {
         return perform {
-            taskService.updateTaskStatus(taskStatusReceive.taskId, taskStatusReceive.status)
+            taskService.updateTaskStatus(taskStatusReceive.taskId, taskStatusReceive.status, token)
             ResponseEntity.ok().body("Successfully updated")
         }
     }

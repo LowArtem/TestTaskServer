@@ -7,6 +7,7 @@ import com.trialbot.tasktest.repositories.HabitRepository
 import com.trialbot.tasktest.repositories.UserRepository
 import com.trialbot.tasktest.utils.getUserIdFromToken
 import com.trialbot.tasktest.utils.toLocalDateTimeUTC
+import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.MalformedJwtException
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -95,28 +96,10 @@ internal class HabitServiceTest(
 
 
     @Test
-    fun `getHabitsByUser successful by auth token`() {
-        var habits: List<HabitResponseDto> = listOf()
-
-        assertDoesNotThrow {
-            habits = habitService.getHabitsByUser(authToken)
+    fun `getHabitsByUser unsuccessful by already expired auth token`() {
+        assertThrows(JwtException::class.java) {
+             habitService.getHabitsByUser(authToken)
         }
-        assertEquals(44, habits.size)
-
-        val habitIdExpected = 55
-        val habitNameExpected = "Cash Manager"
-        val habitDescriptionExpected = "kSREMCw34bEaZOG"
-        val habitCategoryExpected = "Education"
-        val habitTypeExpected = 2
-
-        val habitTest = habits.find { it.id == habitIdExpected }
-
-        assertNotNull(habitTest)
-        assertEquals(habitIdExpected, habitTest!!.id)
-        assertEquals(habitNameExpected, habitTest.name)
-        assertEquals(habitDescriptionExpected, habitTest.description)
-        assertEquals(habitCategoryExpected, habitTest.category)
-        assertEquals(habitTypeExpected, habitTest.type)
     }
 
     @Test

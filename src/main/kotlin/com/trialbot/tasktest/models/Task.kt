@@ -34,7 +34,7 @@ open class Task (
     open var description: String? = null,
 
     @Column(nullable = true)
-    open var notification: Instant? = null,
+    open var notification: Int = 0,
 
     @OneToMany(mappedBy = "task", targetEntity = TaskUser::class, fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE, CascadeType.MERGE, CascadeType.REFRESH])
     open var taskUsers: Set<TaskUser> = setOf(),
@@ -114,7 +114,7 @@ data class TaskReceiveDto(
     val priority: Int,
     val description: String? = null,
     val repeatingInterval: Int = RepeatingInterval.NONE.ordinal,
-    val notification: Instant? = null,
+    val notification: Int = 0,
     val subtasks: Set<SubtaskReceiveDto>? = null
 )
 
@@ -126,7 +126,7 @@ data class TaskResponseDto(
     var priority: Int,
     var description: String?,
     var repeatingInterval: Int = RepeatingInterval.NONE.ordinal,
-    var notification: Instant? = null,
+    var notification: Int = 0,
     var completionDate: Instant?,
     val id: Int? = null,
     var subtasks: Set<SubtaskResponseDto> = setOf()
@@ -152,7 +152,7 @@ data class TaskUpdateReceiveDto(
     var priority: Int,
     var description: String?,
     var repeatingInterval: Int = RepeatingInterval.NONE.ordinal,
-    var notification: Instant? = null,
+    var notification: Int = 0,
     val id: Int? = null,
     var subtasks: Set<SubtaskUpdateReceiveDto> = setOf()
 )
@@ -182,7 +182,7 @@ fun Task.toShortResponseDto(userId: Int?): TaskShortResponseDto = TaskShortRespo
     status = status,
     difficulty = difficulty,
     priority = priority,
-    hasNotification = notification != null,
+    hasNotification = notification != 0,
     hasRepeat = repeatingInterval != RepeatingInterval.NONE.ordinal,
     completionDate = if (userId == null) null else taskUsers.firstOrNull { it.id.userId == userId }?.date,
     id = id ?: -1
